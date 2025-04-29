@@ -1,0 +1,184 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
+import { AlertCircle, Loader2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useToast } from "@/components/ui/use-toast"
+import { AnalysisResults } from "@/components/analysis-results"
+import { Skeleton } from "@/components/ui/skeleton"
+import Cookies from "js-cookie"
+
+// API base URL - would typically come from environment variables
+const API_URL = "https://api.dockerhelper.com" // Replace with your actual API URL
+
+export function RepositoryForm() {
+  const [repoUrl, setRepoUrl] = useState("")
+  const [branch, setBranch] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  const { toast } = useToast()
+  const router = useRouter()
+
+  const validateRepoUrl = (url: string) => {
+    // Basic validation for Git repository URLs
+    const gitUrlPattern = /^(https?:\/\/)?(www\.)?github\.com\/[\w-]+\/[\w.-]+(\/?|\.git)?$/
+    return gitUrlPattern.test(url)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    // Validate repository URL
+    if (!validateRepoUrl(repoUrl)) {
+      setError("Please enter a valid GitHub repository URL")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const token = Cookies.get("token")
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`${API_URL}/repos/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          repo_url: repoUrl,
+          branch: branch || undefined, // Only include if provided
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to analyze repository")
+      }
+
+      const data = await response.json()
+      setAnalysisResult(data)
+      toast({
+        title: "Analysis Complete",
+        description: "Repository has been successfully analyzed.",
+        className: "animate-in slide-in-bottom",
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to analyze repository. Please try again.")
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: err instanceof Error ? err.message : "Failed to analyze repository",
+        className: "animate-in slide-in-bottom",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleReset = () => {
+    setRepoUrl("")
+    setBranch("")
+    setAnalysisResult(null)
+    setError(null)
+  }
+
+  return (
+    <div className="space-y-8">
+      <Card className="card-hover animate-in">
+        <CardContent className="pt-6">
+          {error && (
+            <Alert variant="destructive" className="mb-4 animate-in">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="repoUrl">Git Repository URL</Label>
+              <Input
+                id="repoUrl"
+                placeholder="https://github.com/username/repository"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                disabled={isLoading}
+                required
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter a valid GitHub repository URL (e.g., https://github.com/username/repository)
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="branch">Branch (Optional)</Label>
+              <Input
+                id="branch"
+                placeholder="main"
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                disabled={isLoading}
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={isLoading || !repoUrl} className="hover-scale">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...
+                  </>
+                ) : (
+                  "Analyze Repository"
+                )}
+              </Button>
+              {analysisResult && (
+                <Button type="button" variant="outline" onClick={handleReset} className="hover-scale">
+                  Reset
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {isLoading && (
+        <Card className="animate-pulse">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-32" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {analysisResult && <AnalysisResults analysis={analysisResult} />}
+    </div>
+  )
+}

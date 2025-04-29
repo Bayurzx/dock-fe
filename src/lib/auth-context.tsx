@@ -1,0 +1,240 @@
+"use client"
+
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
+import Cookies from "js-cookie"
+
+// Define user type
+interface User {
+  id: string
+  email: string
+  full_name: string
+  picture_url?: string
+}
+
+// Define auth context type
+interface AuthContextType {
+  user: User | null
+  login: (email: string, password: string) => Promise<void>
+  register: (fullName: string, email: string, password: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>
+  loginWithGithub: () => Promise<void>
+  logout: () => void
+  isLoading: boolean
+}
+
+// Create auth context
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+// Auth provider props
+interface AuthProviderProps {
+  children: ReactNode
+}
+
+// API base URL - would typically come from environment variables
+const API_URL = "https://api.dockerhelper.com" // Replace with your actual API URL
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+
+  // Check for token in URL (OAuth callback)
+  useEffect(() => {
+    const checkUrlForToken = () => {
+      if (pathname === "/oauth-callback") {
+        const token = searchParams?.get("token")
+        const tokenType = searchParams?.get("token_type") || "bearer"
+
+        if (token) {
+          // Store the token in a cookie
+          Cookies.set("token", token, { secure: true, sameSite: "strict" })
+
+          // Remove the token from the URL (to prevent it from being shared/bookmarked)
+          const callbackUrl = searchParams?.get("callbackUrl") || "/repositories"
+          router.replace(decodeURI(callbackUrl))
+
+          // Fetch user data with the new token
+          fetchUserData(token)
+        }
+      }
+    }
+
+    checkUrlForToken()
+  }, [pathname, searchParams, router])
+
+  // Check for existing token on load
+  useEffect(() => {
+    const token = Cookies.get("token")
+
+    if (token) {
+      fetchUserData(token)
+    } else {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Fetch user data with token
+  const fetchUserData = async (token: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/users/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+      } else {
+        // If token is invalid, clear it
+        Cookies.remove("token")
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      Cookies.remove("token")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Login with email/password
+  const login = async (email: string, password: string) => {
+    try {
+      // Create form data for the request
+      const formData = new URLSearchParams()
+      formData.append("username", email)
+      formData.append("password", password)
+
+      const response = await fetch(`${API_URL}/api/v1/auth/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || "Login failed")
+      }
+
+      const { access_token, token_type } = await response.json()
+
+      // Store token in a cookie
+      Cookies.set("token", access_token, { secure: true, sameSite: "strict" })
+
+      // Fetch user data
+      await fetchUserData(access_token)
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      })
+    } catch (error) {
+      console.error("Login error:", error)
+      throw error
+    }
+  }
+
+  // Register new user
+  const register = async (fullName: string, email: string, password: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          full_name: fullName,
+          picture_url: null,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (errorData.detail === "Email already registered.") {
+          throw new Error("Email already registered")
+        } else if (errorData.errors) {
+          // Handle validation errors
+          const errorMessages = errorData.errors.map((err: any) => err.message).join(", ")
+          throw new Error(errorMessages)
+        } else {
+          throw new Error(errorData.detail || "Registration failed")
+        }
+      }
+
+      const { access_token, token_type } = await response.json()
+
+      // Store token in a cookie
+      Cookies.set("token", access_token, { secure: true, sameSite: "strict" })
+
+      // Fetch user data
+      await fetchUserData(access_token)
+
+      toast({
+        title: "Registration successful",
+        description: `Welcome to DockerHelper, ${fullName}!`,
+      })
+    } catch (error) {
+      console.error("Registration error:", error)
+      throw error
+    }
+  }
+
+  // Login with Google
+  const loginWithGoogle = async () => {
+    // Get the current URL to use as a callback
+    const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
+
+    // Redirect to Google OAuth endpoint
+    window.location.href = `${API_URL}/api/v1/auth/login/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
+  }
+
+  // Login with GitHub
+  const loginWithGithub = async () => {
+    // Get the current URL to use as a callback
+    const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
+
+    // Redirect to GitHub OAuth endpoint
+    window.location.href = `${API_URL}/api/v1/auth/login/github?callbackUrl=${encodeURIComponent(callbackUrl)}`
+  }
+
+  // Logout
+  const logout = () => {
+    Cookies.remove("token")
+    setUser(null)
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    })
+    router.push("/login")
+  }
+
+  const value = {
+    user,
+    login,
+    register,
+    loginWithGoogle,
+    loginWithGithub,
+    logout,
+    isLoading,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+// Custom hook to use auth context
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}

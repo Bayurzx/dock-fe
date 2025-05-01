@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { CodeDisplay } from "@/components/code-display"
 
 // API base URL - would typically come from environment variables
-const API_URL = "https://api.dockerhelper.com" // Replace with your actual API URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
 interface Service {
   name: string

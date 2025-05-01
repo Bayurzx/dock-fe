@@ -1,3 +1,5 @@
+// src\components\analysis-results.tsx
+
 "use client"
 
 import { useState } from "react"
@@ -11,22 +13,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { CodeDisplay } from "@/components/code-display"
 import { Skeleton } from "@/components/ui/skeleton"
 import Cookies from "js-cookie"
+import { AnalysisResultsProps } from "@/types"
 
 // API base URL - would typically come from environment variables
-const API_URL = "https://api.dockerhelper.com" // Replace with your actual API URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
-interface AnalysisResultsProps {
-  analysis: {
-    analysis_id: string
-    framework: string
-    dependencies: string[]
-    summary: string
-    ports: number[]
-    run_command: string
-    base_image: string
-    additional_info?: Record<string, any>
-  }
-}
 
 export function AnalysisResults({ analysis }: AnalysisResultsProps) {
   const [isGenerating, setIsGenerating] = useState(false)

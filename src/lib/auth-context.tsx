@@ -13,6 +13,18 @@ interface User {
   picture_url?: string
 }
 
+// Define validation error type
+interface ValidationError {
+  field: string
+  message: string
+}
+
+// Define error response type
+interface ErrorResponse {
+  detail: string
+  errors?: ValidationError[]
+}
+
 // Define auth context type
 interface AuthContextType {
   user: User | null
@@ -32,8 +44,14 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
-// API base URL - would typically come from environment variables
-const API_URL = "https://api.dockerhelper.com" // Replace with your actual API URL
+// API base URL from environment variables
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+const OAUTH_CALLBACK_URL = process.env.NEXT_PUBLIC_OAUTH_CALLBACK_URL || `${APP_URL}/oauth-callback`
+
+// Feature flags
+const ENABLE_GITHUB_LOGIN = process.env.NEXT_PUBLIC_ENABLE_GITHUB_LOGIN !== "false"
+const ENABLE_GOOGLE_LOGIN = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN !== "false"
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
@@ -81,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Fetch user data with token
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/users/me`, {
+      const response = await fetch(`${API_URL}/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -110,7 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       formData.append("username", email)
       formData.append("password", password)
 
-      const response = await fetch(`${API_URL}/api/v1/auth/token`, {
+      const response = await fetch(`${API_URL}/auth/token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -144,7 +162,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Register new user
   const register = async (fullName: string, email: string, password: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/auth/register`, {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -158,12 +176,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = (await response.json()) as ErrorResponse
         if (errorData.detail === "Email already registered.") {
           throw new Error("Email already registered")
-        } else if (errorData.errors) {
+        } else if (errorData.errors && errorData.errors.length > 0) {
           // Handle validation errors
-          const errorMessages = errorData.errors.map((err: any) => err.message).join(", ")
+          const errorMessages = errorData.errors.map((err) => err.message).join(", ")
           throw new Error(errorMessages)
         } else {
           throw new Error(errorData.detail || "Registration failed")
@@ -190,20 +208,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Login with Google
   const loginWithGoogle = async () => {
+    if (!ENABLE_GOOGLE_LOGIN) {
+      toast({
+        variant: "destructive",
+        title: "Google login disabled",
+        description: "Google login is currently disabled.",
+      })
+      return
+    }
+
     // Get the current URL to use as a callback
     const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
 
     // Redirect to Google OAuth endpoint
-    window.location.href = `${API_URL}/api/v1/auth/login/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    window.location.href = `${API_URL}/auth/login/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
   }
 
   // Login with GitHub
   const loginWithGithub = async () => {
+    if (!ENABLE_GITHUB_LOGIN) {
+      toast({
+        variant: "destructive",
+        title: "GitHub login disabled",
+        description: "GitHub login is currently disabled.",
+      })
+      return
+    }
+
     // Get the current URL to use as a callback
     const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
 
     // Redirect to GitHub OAuth endpoint
-    window.location.href = `${API_URL}/api/v1/auth/login/github?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    window.location.href = `${API_URL}/auth/login/github?callbackUrl=${encodeURIComponent(callbackUrl)}`
   }
 
   // Logout

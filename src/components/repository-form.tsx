@@ -14,16 +14,17 @@ import { useToast } from "@/components/ui/use-toast"
 import { AnalysisResults } from "@/components/analysis-results"
 import { Skeleton } from "@/components/ui/skeleton"
 import Cookies from "js-cookie"
+import { AnalysisResult } from "@/types"
 
 // API base URL - would typically come from environment variables
-const API_URL = "https://api.dockerhelper.com" // Replace with your actual API URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
 export function RepositoryForm() {
   const [repoUrl, setRepoUrl] = useState("")
   const [branch, setBranch] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const { toast } = useToast()
   const router = useRouter()
 

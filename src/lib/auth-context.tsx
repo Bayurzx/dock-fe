@@ -47,7 +47,7 @@ interface AuthProviderProps {
 // API base URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-const OAUTH_CALLBACK_URL = process.env.NEXT_PUBLIC_OAUTH_CALLBACK_URL || `${APP_URL}/oauth-callback`
+const OAUTH_CALLBACK_URL = process.env.NEXT_PUBLIC_OAUTH_CALLBACK_URL || `${APP_URL}/login/callback`
 
 // Feature flags
 const ENABLE_GITHUB_LOGIN = process.env.NEXT_PUBLIC_ENABLE_GITHUB_LOGIN !== "false"
@@ -64,26 +64,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Check for token in URL (OAuth callback)
   useEffect(() => {
     const checkUrlForToken = () => {
-      if (pathname === "/oauth-callback") {
+      // Check if we're on the login callback page
+      if (pathname === "/login/callback") {
         const token = searchParams?.get("token")
-        const tokenType = searchParams?.get("token_type") || "bearer"
+        const error = searchParams?.get("error")
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Authentication Failed",
+            description: error,
+          })
+          return
+        }
 
         if (token) {
           // Store the token in a cookie
           Cookies.set("token", token, { secure: true, sameSite: "strict" })
 
-          // Remove the token from the URL (to prevent it from being shared/bookmarked)
-          const callbackUrl = searchParams?.get("callbackUrl") || "/repositories"
-          router.replace(decodeURI(callbackUrl))
-
           // Fetch user data with the new token
           fetchUserData(token)
+
+          toast({
+            title: "Authentication Successful",
+            description: "You have been successfully logged in.",
+          })
         }
       }
     }
 
     checkUrlForToken()
-  }, [pathname, searchParams, router])
+  }, [pathname, searchParams, toast])
 
   // Check for existing token on load
   useEffect(() => {
@@ -111,10 +122,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         // If token is invalid, clear it
         Cookies.remove("token")
+
+        if (pathname === "/login/callback") {
+          toast({
+            variant: "destructive",
+            title: "Authentication Failed",
+            description: "Failed to fetch user data. Please try again.",
+          })
+        }
       }
     } catch (error) {
       console.error("Error fetching user data:", error)
       Cookies.remove("token")
+
+      if (pathname === "/login/callback") {
+        toast({
+          variant: "destructive",
+          title: "Authentication Failed",
+          description: "An error occurred while fetching user data.",
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -137,7 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = (await response.json()) as ErrorResponse
         throw new Error(errorData.detail || "Login failed")
       }
 
@@ -220,8 +247,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Get the current URL to use as a callback
     const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
 
+    // Construct the redirect URL
+    const redirectUrl = `${API_URL}/auth/login/google?callbackUrl=${encodeURIComponent(OAUTH_CALLBACK_URL)}?callbackUrl=${encodeURIComponent(callbackUrl)}`
+
     // Redirect to Google OAuth endpoint
-    window.location.href = `${API_URL}/auth/login/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    window.location.href = redirectUrl
   }
 
   // Login with GitHub
@@ -238,8 +268,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Get the current URL to use as a callback
     const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
 
+    // Construct the redirect URL
+    const redirectUrl = `${API_URL}/auth/login/github?callbackUrl=${encodeURIComponent(OAUTH_CALLBACK_URL)}?callbackUrl=${encodeURIComponent(callbackUrl)}`
+
     // Redirect to GitHub OAuth endpoint
-    window.location.href = `${API_URL}/auth/login/github?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    window.location.href = redirectUrl
   }
 
   // Logout

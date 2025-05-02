@@ -12,6 +12,7 @@ import { AlertCircle, Plus, Trash, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { CodeDisplay } from "@/components/code-display"
+import Cookies from "js-cookie"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -52,7 +53,7 @@ export function ComposeGeneratorForm() {
     setIsLoading(true)
 
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")
       if (!token) {
         router.push("/login")
         return
@@ -105,7 +106,7 @@ export function ComposeGeneratorForm() {
 
   const handleMarkAsSuccessful = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")
       if (!token) {
         router.push("/login")
         return

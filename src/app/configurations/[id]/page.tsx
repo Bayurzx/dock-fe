@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import Cookies from "js-cookie"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -54,7 +55,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
     setError(null)
 
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")
       if (!token) {
         router.push("/login")
         return
@@ -90,7 +91,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
     if (!configuration) return
 
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")
       if (!token) {
         router.push("/login")
         return
@@ -131,7 +132,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
     if (!configuration) return
 
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")
       if (!token) {
         router.push("/login")
         return
@@ -173,7 +174,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
     if (!configuration) return
 
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")
       if (!token) {
         router.push("/login")
         return

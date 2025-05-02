@@ -7,8 +7,17 @@ const protectedPaths = ["/repositories", "/configurations", "/compose-generator"
 // List of paths that should redirect to dashboard if already authenticated
 const authPaths = ["/login", "/register"]
 
+// List of paths that should be accessible regardless of authentication status
+const publicPaths = ["/login/callback", "/oauth-callback"]
+
 export function middleware(request: NextRequest) {
   const currentPath = request.nextUrl.pathname
+
+  // Check if the path is a public path that should always be accessible
+  const isPublicPath = publicPaths.some((path) => currentPath === path || currentPath.startsWith(`${path}/`))
+  if (isPublicPath) {
+    return NextResponse.next()
+  }
 
   // Check if the path is protected
   const isProtectedPath = protectedPaths.some((path) => currentPath === path || currentPath.startsWith(`${path}/`))

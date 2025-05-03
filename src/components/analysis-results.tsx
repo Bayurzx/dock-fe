@@ -37,7 +37,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/dockerfile`, {
+      const response = await fetch(`${API_URL}/docker/configs/dockerfile`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${analysis.analysis_id}/feedback`, {
+      const response = await fetch(`${API_URL}/docker/configs/${analysis.analysis_id}/feedback`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

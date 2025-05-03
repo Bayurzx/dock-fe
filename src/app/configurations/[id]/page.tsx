@@ -34,6 +34,8 @@ interface Configuration {
   created_at: string
   is_successful?: boolean
   content: string
+  docker_compose_content?: string
+  dockerfile_content?: string
 }
 
 export default function ConfigurationDetailPage({ params }: { params: { id: string } }) {
@@ -61,7 +63,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${params.id}`, {
+      const response = await fetch(`${API_URL}/docker/configs/${params.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -97,7 +99,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${configuration.id}`, {
+      const response = await fetch(`${API_URL}/docker/configs/${configuration.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +140,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${configuration.id}/feedback`, {
+      const response = await fetch(`${API_URL}/docker/configs/${configuration.id}/feedback`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -180,7 +182,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${configuration.id}`, {
+      const response = await fetch(`${API_URL}/docker/configs/${configuration.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -315,7 +317,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
                   <div>
                     <Label className="text-sm font-medium block mb-2">Configuration Content</Label>
                     <CodeDisplay
-                      code={configuration.content}
+                      code={configuration.content || configuration.docker_compose_content || configuration.dockerfile_content || ""}
                       language={configuration.type === "dockerfile" ? "dockerfile" : "yaml"}
                     />
                   </div>

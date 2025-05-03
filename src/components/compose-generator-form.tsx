@@ -66,7 +66,7 @@ export function ComposeGeneratorForm() {
         throw new Error("At least one service with name and analysis ID is required")
       }
 
-      const response = await fetch(`${API_URL}/configs/compose`, {
+      const response = await fetch(`${API_URL}/docker/configs/compose`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

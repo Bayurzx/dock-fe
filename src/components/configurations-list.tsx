@@ -65,7 +65,7 @@ export function ConfigurationsList() {
         return
       }
 
-      const response = await fetch(`${API_URL}/configs`, {
+      const response = await fetch(`${API_URL}/docker/configs`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +118,7 @@ export function ConfigurationsList() {
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${selectedConfig.id}`, {
+      const response = await fetch(`${API_URL}/docker/configs/${selectedConfig.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ export function ConfigurationsList() {
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${config.id}/feedback`, {
+      const response = await fetch(`${API_URL}/docker/configs/${config.id}/feedback`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -200,7 +200,7 @@ export function ConfigurationsList() {
         return
       }
 
-      const response = await fetch(`${API_URL}/configs/${editingConfig.id}`, {
+      const response = await fetch(`${API_URL}/docker/configs/${editingConfig.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

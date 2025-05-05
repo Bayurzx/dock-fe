@@ -79,7 +79,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         return
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/${analysis.analysis_id}/feedback`, {
+      const response = await fetch(`${API_URL}/docker/configs/${analysis.analysis_id}/mark_successful`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,23 +132,55 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
               <h3 className="text-sm font-medium">Base Image</h3>
               <p className="mt-1">{analysis.base_image}</p>
             </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-medium">Dependencies</h3>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {analysis.dependencies.map((dep, index) => (
-                <Badge key={index} variant="secondary">
-                  {dep}
-                </Badge>
-              ))}
+            <div>
+              <h3 className="text-sm font-medium">Branch</h3>
+              <p className="mt-1">{analysis.branch}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">Git Hash</h3>
+              <p className="mt-1 font-mono text-xs">{analysis.git_hash}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">Recommended Base Image</h3>
+              <p className="mt-1">{analysis.recommended_base_image}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">Working Directory</h3>
+              <p className="mt-1">{analysis.analysis?.working_directory}</p>
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium">Ports</h3>
+            <h3 className="text-sm font-medium">Dependencies</h3>
+            {Array.isArray(analysis.dependencies) ? (
+              <div className="mt-1 flex flex-wrap gap-2">
+                {analysis.dependencies.map((dep, index) => (
+                  <Badge key={index} variant="secondary">
+                    {dep}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              Object.entries(analysis.dependencies || {}).map(([tool, deps], index) => (
+                <div key={index} className="mt-2">
+                  <p className="text-xs font-semibold text-gray-500">{tool}</p>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {Array.isArray(deps) &&
+                      deps.map((dep, idx) => (
+                        <Badge key={idx} variant="secondary">
+                          {dep}
+                        </Badge>
+                      ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium">Exposed Ports</h3>
             <div className="mt-1 flex flex-wrap gap-2">
-              {analysis.ports.map((port, index) => (
+              {(analysis.ports.length ? analysis.ports : analysis.analysis?.exposed_ports || []).map((port, index) => (
                 <Badge key={index} variant="outline">
                   {port}
                 </Badge>
@@ -157,13 +189,42 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
           </div>
 
           <div>
+            <h3 className="text-sm font-medium">Environment Variables</h3>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {(analysis.environment_variables || analysis.analysis?.environment_variables || []).map((env, index) => (
+                <Badge key={index} variant="secondary">
+                  {env}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {analysis.analysis?.build_steps?.length ? (
+            <div>
+              <h3 className="text-sm font-medium">Build Steps</h3>
+              <ul className="mt-1 list-disc list-inside space-y-1">
+                {analysis.analysis.build_steps!.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <div>
             <h3 className="text-sm font-medium">Run Command</h3>
-            <p className="mt-1 font-mono text-sm bg-muted p-2 rounded overflow-x-auto">{analysis.run_command}</p>
+            <p className="mt-1 font-mono text-sm bg-muted p-2 rounded overflow-x-auto">
+              {analysis.run_command || analysis.analysis?.run_command}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium">Project Type</h3>
+            <p className="mt-1">{analysis.analysis?.project_type}</p>
           </div>
 
           <div>
             <h3 className="text-sm font-medium">Summary</h3>
-            <p className="mt-1">{analysis.summary}</p>
+            <p className="mt-1">{analysis.summary || analysis.analysis?.summary}</p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-wrap gap-2 justify-between">

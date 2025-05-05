@@ -155,7 +155,7 @@ export function ConfigurationsList() {
         return
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/${config.id}/feedback`, {
+      const response = await fetch(`${API_URL}/docker/configs/${config.id}/mark_successful`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

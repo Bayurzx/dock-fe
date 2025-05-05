@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { use } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Container } from "@/components/ui/container"
@@ -38,7 +39,11 @@ interface Configuration {
   dockerfile_content?: string
 }
 
-export default function ConfigurationDetailPage({ params }: { params: { id: string } }) {
+export default function ConfigurationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  // Unwrap params using React.use()
+  const { id: configId } = use(params); 
+  // const configId = id
+
   const [configuration, setConfiguration] = useState<Configuration | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +55,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
 
   useEffect(() => {
     fetchConfiguration()
-  }, [params.id])
+  }, [configId])
 
   const fetchConfiguration = async () => {
     setIsLoading(true)
@@ -63,7 +68,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
         return
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/${params.id}`, {
+      const response = await fetch(`${API_URL}/docker/configs/${configId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -140,7 +145,7 @@ export default function ConfigurationDetailPage({ params }: { params: { id: stri
         return
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/${configuration.id}/feedback`, {
+      const response = await fetch(`${API_URL}/docker/configs/${configuration.id}/mark_successful`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -24,20 +24,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import Cookies from "js-cookie"
+import type { Configuration } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-
-interface Configuration {
-  id: string
-  name: string
-  type: "dockerfile" | "compose"
-  created_at: string
-  is_verified_good?: boolean
-  content: string
-  docker_compose_content?: string
-  dockerfile_content?: string
-}
 
 export default function ConfigurationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   // Unwrap params using React.use()

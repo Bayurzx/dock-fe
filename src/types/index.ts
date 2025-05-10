@@ -88,3 +88,40 @@ export type AdditionalInfoValue =
     };
   }
   
+// User types
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  picture_url?: string
+}
+
+// Validation error types
+export interface ValidationError {
+  field: string
+  message: string
+}
+
+// Error response types
+export interface ErrorResponse {
+  detail: string
+  errors?: ValidationError[]
+}
+
+// Configuration types
+export interface Configuration {
+  id: string
+  name: string
+  type: "dockerfile" | "compose"
+  created_at: string
+  is_verified_good?: boolean
+  content: string
+  docker_compose_content?: string
+  dockerfile_content?: string
+}
+// Service types for compose generator
+export interface Service {
+  name: string
+  analysisId: string
+  port?: string
+}

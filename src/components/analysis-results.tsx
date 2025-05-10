@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { CodeDisplay } from "@/components/code-display"
 import { Skeleton } from "@/components/ui/skeleton"
 import Cookies from "js-cookie"
-import { AnalysisResultsProps } from "@/types"
+import type { AnalysisResultsProps } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"

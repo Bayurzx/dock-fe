@@ -37,14 +37,15 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         return
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/dockerfile`, {
+      const response = await fetch(`${API_URL}/docker/generate/dockerfile`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          analysis_id: analysis.analysis_id,
+          analysis_id: analysis.id,
+          name: analysis.repo_url.split("/").pop(),
         }),
       })
 
@@ -86,7 +87,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          is_successful: true,
+          is_verified_good: true,
         }),
       })
 
@@ -130,7 +131,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
             </div>
             <div>
               <h3 className="text-sm font-medium">Base Image</h3>
-              <p className="mt-1">{analysis.base_image}</p>
+              <p className="mt-1">{analysis.base_image || analysis.recommended_base_image}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium">Branch</h3>

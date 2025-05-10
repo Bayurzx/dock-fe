@@ -33,7 +33,7 @@ interface Configuration {
   name: string
   type: "dockerfile" | "compose"
   created_at: string
-  is_successful?: boolean
+  is_verified_good?: boolean
   content: string
   docker_compose_content?: string
   dockerfile_content?: string
@@ -152,7 +152,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          is_successful: true,
+          is_verified_good: true,
         }),
       })
 
@@ -161,7 +161,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
         throw new Error(errorData.message || "Failed to submit feedback")
       }
 
-      setConfiguration({ ...configuration, is_successful: true })
+      setConfiguration({ ...configuration, is_verified_good: true })
       toast({
         title: "Feedback Submitted",
         description:
@@ -277,11 +277,11 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
                       </div>
                     )}
                     <CardDescription>
-                      {configuration.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"} configuration
+                      {configuration.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"} configuration
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
-                    {!configuration.is_successful && (
+                    {!configuration.is_verified_good && (
                       <Button variant="outline" onClick={handleMarkAsSuccessful}>
                         <Check className="mr-2 h-4 w-4" />
                         Mark as Successful
@@ -299,7 +299,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
                       <Label className="text-sm font-medium">Type</Label>
                       <div className="mt-1">
                         <Badge variant="outline">
-                          {configuration.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}
+                        {configuration.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"}
                         </Badge>
                       </div>
                     </div>
@@ -310,7 +310,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
                     <div>
                       <Label className="text-sm font-medium">Status</Label>
                       <div className="mt-1">
-                        {configuration.is_successful ? (
+                        {configuration.is_verified_good ? (
                           <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Successful</Badge>
                         ) : (
                           <Badge variant="outline">Pending feedback</Badge>
@@ -323,7 +323,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
                     <Label className="text-sm font-medium block mb-2">Configuration Content</Label>
                     <CodeDisplay
                       code={configuration.content || configuration.docker_compose_content || configuration.dockerfile_content || ""}
-                      language={configuration.type === "dockerfile" ? "dockerfile" : "yaml"}
+                      language={configuration.docker_compose_content === null ? "dockerfile" : "yaml"}
                     />
                   </div>
                 </CardContent>

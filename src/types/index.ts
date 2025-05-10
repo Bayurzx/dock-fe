@@ -3,6 +3,7 @@
 // }
 
 export interface AnalysisResult {
+  id?: string | null;
   analysis_id?: string | null;
   repo_url: string;
   branch: string;
@@ -53,6 +54,7 @@ export type AdditionalInfoValue =
 
   export interface AnalysisResultsProps {
     analysis: {
+      id?: string | null;
       analysis_id?: string | null;
       repo_url: string;
       branch: string;

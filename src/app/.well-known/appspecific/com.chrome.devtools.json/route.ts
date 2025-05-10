@@ -1,8 +1,7 @@
 // app/.well-known/appspecific/com.chrome.devtools.json/route.ts
+
 import { v4 as uuidv4 } from 'uuid';
 import { NextRequest } from 'next/server';
-import path from 'path';
-import fs from 'fs';
 
 interface DevToolsWorkspace {
   workspace: {
@@ -11,29 +10,35 @@ interface DevToolsWorkspace {
   };
 }
 
-export async function GET(_request: NextRequest): Promise<Response> {
-  // Try to read tsconfig to determine root directory
-  let projectRoot = process.cwd();
-  
-  try {
-    // Attempt to read tsconfig for more accurate path information
-    const tsconfigPath = path.join(process.cwd(), 'tsconfig.json');
-    if (fs.existsSync(tsconfigPath)) {
-      const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf8'));
-      
-      // If using baseUrl in tsconfig, adjust the root path accordingly
-      if (tsconfig.compilerOptions?.baseUrl) {
-        projectRoot = path.join(process.cwd(), tsconfig.compilerOptions.baseUrl);
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to parse tsconfig.json, using default path:', error);
+// Cached UUID to persist between requests (in-memory during dev)
+let cachedUUID: string | null = null;
+
+/**
+ * Route handler for Chrome DevTools Automatic Workspace Folders feature
+ * This allows DevTools to automatically connect to local workspace folders
+ * See: https://developer.chrome.com/docs/devtools/workspaces
+ */
+
+export async function GET(req: NextRequest): Promise<Response> {
+  const host = req.headers.get('host');
+
+  // ✅ Only serve on localhost and during development
+  if (
+    process.env.NODE_ENV !== 'development' ||
+    !host?.startsWith('localhost')
+  ) {
+    return new Response(null, { status: 404 });
   }
+
+  const projectRoot = process.cwd();
+
+  // Prefer env variable if set, else use cached or new UUID
+  const uuid = process.env.WORKSPACE_UUID || cachedUUID || (cachedUUID = uuidv4());
 
   const workspaceConfig: DevToolsWorkspace = {
     workspace: {
       root: projectRoot,
-      uuid: process.env.WORKSPACE_UUID || uuidv4()
+      uuid
     }
   };
 

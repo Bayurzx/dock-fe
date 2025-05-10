@@ -32,8 +32,10 @@ interface Configuration {
   name: string
   type: "dockerfile" | "compose"
   created_at: string
-  is_successful?: boolean
+  is_verified_good?: boolean
   content: string
+  docker_compose_content?: string
+  dockerfile_content?: string
 }
 
 export function ConfigurationsList() {
@@ -162,7 +164,7 @@ export function ConfigurationsList() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          is_successful: true,
+          is_verified_good: true,
         }),
       })
 
@@ -172,7 +174,7 @@ export function ConfigurationsList() {
       }
 
       // Update the local state
-      setConfigurations(configurations.map((c) => (c.id === config.id ? { ...c, is_successful: true } : c)))
+      setConfigurations(configurations.map((c) => (c.id === config.id ? { ...c, is_verified_good: true } : c)))
 
       toast({
         title: "Feedback Submitted",
@@ -280,7 +282,7 @@ export function ConfigurationsList() {
           <CardTitle className="text-lg">{config.name}</CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline">{config.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}</Badge>
-            {config.is_successful ? (
+            {config.is_verified_good ? (
               <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Successful</Badge>
             ) : (
               <Badge variant="outline">Pending feedback</Badge>
@@ -299,7 +301,7 @@ export function ConfigurationsList() {
             <Pencil className="h-4 w-4" />
             <span className="sr-only">Edit</span>
           </Button>
-          {!config.is_successful && (
+          {!config.is_verified_good && (
             <Button variant="ghost" size="sm" onClick={() => handleMarkAsSuccessful(config)} className="h-8 w-8 p-0">
               <Check className="h-4 w-4" />
               <span className="sr-only">Mark as successful</span>
@@ -378,12 +380,12 @@ export function ConfigurationsList() {
                         <TableCell className="font-medium">{config.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {config.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}
+                            {config.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"}
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDate(config.created_at)}</TableCell>
                         <TableCell>
-                          {config.is_successful ? (
+                          {config.is_verified_good ? (
                             <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Successful</Badge>
                           ) : (
                             <Badge variant="outline">Pending feedback</Badge>
@@ -409,7 +411,7 @@ export function ConfigurationsList() {
                               <Pencil className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Button>
-                            {!config.is_successful && (
+                            {!config.is_verified_good && (
                               <Button
                                 variant="ghost"
                                 size="sm"

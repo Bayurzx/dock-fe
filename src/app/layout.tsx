@@ -11,7 +11,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "DockerHelper - Automated Docker Configuration",
   description: "Generate Dockerfile and docker-compose.yaml configurations automatically for your Git repositories",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({

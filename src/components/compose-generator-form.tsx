@@ -8,13 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Plus, Trash, Check } from "lucide-react"
+import { AlertCircle, Plus, Trash } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { CodeDisplay } from "@/components/code-display"
+import { AnalysisSelector } from "@/components/analysis-selector"
+import { useRepositoryAnalyses } from "@/hooks/use-repository-analyses"
 import Cookies from "js-cookie"
 
-// API base URL - would typically come from environment variables
+// API base URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
 interface Service {
@@ -30,6 +32,9 @@ export function ComposeGeneratorForm() {
   const [composeYaml, setComposeYaml] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
+
+  // Use our custom hook to fetch repository analyses
+  const { analyses, isLoading: analysesLoading, error: analysesError } = useRepositoryAnalyses()
 
   const addService = () => {
     setServices([...services, { name: "", analysisId: "", port: "" }])
@@ -66,7 +71,7 @@ export function ComposeGeneratorForm() {
         throw new Error("At least one service with name and analysis ID is required")
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/compose`, {
+      const response = await fetch(`${API_URL}/docker/generate/docker-compose`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,28 +109,6 @@ export function ComposeGeneratorForm() {
     }
   }
 
-  const handleMarkAsSuccessful = async () => {
-    try {
-      const token = Cookies.get("token")
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      // We would need a compose_id here, but for simplicity we'll just show the toast
-      toast({
-        title: "Feedback Submitted",
-        description: "Thank you for your feedback! This helps improve our system.",
-      })
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Feedback Failed",
-        description: err instanceof Error ? err.message : "Failed to submit feedback",
-      })
-    }
-  }
-
   return (
     <div className="space-y-8">
       <Card>
@@ -133,7 +116,7 @@ export function ComposeGeneratorForm() {
           <CardTitle>Compose File Generator</CardTitle>
           <CardDescription>
             Specify the services you want to include in your docker-compose.yaml file. Each service requires a name and
-            the analysis ID from a previously analyzed repository.
+            the analysis from a previously analyzed repository.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,17 +156,18 @@ export function ComposeGeneratorForm() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`analysis-id-${index}`}>Analysis ID</Label>
-                    <Input
-                      id={`analysis-id-${index}`}
-                      placeholder="ID from repository analysis"
-                      value={service.analysisId}
-                      onChange={(e) => updateService(index, "analysisId", e.target.value)}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
+
+                  {/* Use our AnalysisSelector component */}
+                  <AnalysisSelector
+                    label="Repository Analysis"
+                    analyses={analyses}
+                    selectedAnalysisId={service.analysisId}
+                    onAnalysisChange={(analysisId) => updateService(index, "analysisId", analysisId)}
+                    isLoading={analysesLoading}
+                    error={analysesError}
+                    className="space-y-2"
+                  />
+
                   <div className="space-y-2">
                     <Label htmlFor={`port-${index}`}>Port (Optional)</Label>
                     <Input
@@ -216,17 +200,15 @@ export function ComposeGeneratorForm() {
           <CardHeader>
             <CardTitle>Generated docker-compose.yaml</CardTitle>
             <CardDescription>
-              Review the generated docker-compose.yaml file. You can copy it to your clipboard or mark it as successful
-              if it meets your needs.
+              Review the generated docker-compose.yaml file. You can copy it to your clipboard.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <CodeDisplay code={composeYaml} language="yaml" />
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button variant="outline" onClick={handleMarkAsSuccessful}>
-              <Check className="mr-2 h-4 w-4" />
-              Mark as Successful
+            <Button variant="outline" onClick={() => router.push("/configurations")}>
+              View All Configurations
             </Button>
           </CardFooter>
         </Card>

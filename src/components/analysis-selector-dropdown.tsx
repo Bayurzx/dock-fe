@@ -7,6 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import Cookies from "js-cookie"
+import type { BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -85,7 +86,7 @@ export function AnalysisSelectorDropdown({
       setAnalyses(data)
     } catch (err) {
       console.error("Error fetching analyses:", err)
-      setError(err instanceof Error ? err.message : "Failed to fetch analyses")
+      setError(err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch analyses")
     } finally {
       setIsLoading(false)
     }

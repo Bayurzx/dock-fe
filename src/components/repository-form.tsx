@@ -15,7 +15,7 @@ import { AnalysisResults } from "@/components/analysis-results"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AnalysisSelectorDropdown } from "@/components/analysis-selector-dropdown"
 import Cookies from "js-cookie"
-import type { AnalysisResult } from "@/types"
+import type { AnalysisResult, BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -80,11 +80,16 @@ export function RepositoryForm() {
         className: "animate-in slide-in-bottom",
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to analyze repository. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to analyze repository. Please try again.",
+      )
+
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: err instanceof Error ? err.message : "Failed to analyze repository",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to analyze repository",
         className: "animate-in slide-in-bottom",
       })
     } finally {
@@ -123,11 +128,15 @@ export function RepositoryForm() {
         description: "Previous analysis has been loaded successfully.",
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load analysis. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to load analysis. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Loading Failed",
-        description: err instanceof Error ? err.message : "Failed to load analysis",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to load analysis",
       })
     } finally {
       setIsLoading(false)

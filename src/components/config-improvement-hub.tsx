@@ -14,6 +14,7 @@ import { CodeDisplay } from "@/components/code-display"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import Cookies from "js-cookie"
+import type { BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -83,11 +84,15 @@ export default function ConfigImprovementHub() {
         fetchConfigDetail(configId)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch configurations. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to fetch configurations. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch configurations",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configurations",
       })
     } finally {
       setIsLoadingConfigs(false)
@@ -123,11 +128,15 @@ export default function ConfigImprovementHub() {
       const data = await response.json()
       setSelectedConfig(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch configuration details. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to fetch configuration details. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch configuration details",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configuration details",
       })
     } finally {
       setIsLoadingConfig(false)
@@ -180,11 +189,15 @@ export default function ConfigImprovementHub() {
         description: "Your feedback has been applied to improve the configuration.",
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to improve configuration. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to improve configuration. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Improvement Failed",
-        description: err instanceof Error ? err.message : "Failed to improve configuration",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to improve configuration",
       })
     } finally {
       setIsSubmitting(false)

@@ -108,6 +108,11 @@ export interface ErrorResponse {
   errors?: ValidationError[]
 }
 
+// Add the BackendError interface after the ErrorResponse interface
+export interface BackendError extends Error {
+  detail?: string
+}
+
 // Configuration types
 export interface Configuration {
   id: string

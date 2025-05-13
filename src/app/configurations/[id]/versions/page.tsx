@@ -25,6 +25,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { VersionRevertFlow } from "@/components/version-revert-flow"
 import Cookies from "js-cookie"
+import type { BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -124,11 +125,15 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       const data = await response.json()
       setVersions(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch versions. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to fetch versions. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch versions",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch versions",
       })
     } finally {
       setIsLoading(false)
@@ -160,7 +165,7 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch version content",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch version content",
       })
       return null
     }
@@ -179,7 +184,7 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch version content",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch version content",
       })
     }
   }
@@ -200,7 +205,7 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch version content for comparison",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch version content for comparison",
       })
     }
   }
@@ -243,7 +248,7 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       toast({
         variant: "destructive",
         title: "Revert Failed",
-        description: err instanceof Error ? err.message : "Failed to revert to version",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to revert to version",
       })
     } finally {
       setIsReverting(false)

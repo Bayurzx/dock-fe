@@ -20,6 +20,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import Cookies from "js-cookie"
+// Add import for BackendError
+import type { BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -93,7 +95,8 @@ export function VersionRevertFlow({
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch versions",
+        // description: err instanceof Error ? err.message : "Failed to fetch versions",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch versions",
       })
     } finally {
       setIsLoading(false)
@@ -136,7 +139,8 @@ export function VersionRevertFlow({
       toast({
         variant: "destructive",
         title: "Revert Failed",
-        description: err instanceof Error ? err.message : "Failed to revert to version",
+        // description: err instanceof Error ? err.message : "Failed to revert to version",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to revert to version",
       })
     } finally {
       setIsReverting(false)

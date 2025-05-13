@@ -22,7 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Cookies from "js-cookie"
-import type { AnalysisResultsProps } from "@/types"
+import type { AnalysisResultsProps, BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -74,11 +74,15 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         description: "Dockerfile has been successfully generated.",
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate Dockerfile. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to generate Dockerfile. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: err instanceof Error ? err.message : "Failed to generate Dockerfile",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to generate Dockerfile",
       })
     } finally {
       setIsGenerating(false)
@@ -119,7 +123,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       toast({
         variant: "destructive",
         title: "Feedback Failed",
-        description: err instanceof Error ? err.message : "Failed to submit feedback",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to submit feedback",
       })
     }
   }
@@ -165,7 +169,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       toast({
         variant: "destructive",
         title: "Improvement Failed",
-        description: err instanceof Error ? err.message : "Failed to improve configuration",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to improve configuration",
       })
     } finally {
       setIsImproving(false)

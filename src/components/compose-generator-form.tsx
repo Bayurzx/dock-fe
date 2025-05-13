@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { CodeDisplay } from "@/components/code-display"
 import { AnalysisSelectorDropdown } from "@/components/analysis-selector-dropdown"
 import Cookies from "js-cookie"
+import type { BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -32,6 +33,7 @@ export function ComposeGeneratorForm() {
   const [configId, setConfigId] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
+  const [configName, setConfigName] = useState(`Docker Compose ${new Date().toLocaleDateString()}`)
 
   const addService = () => {
     setServices([...services, { name: "", analysisId: "", port: "" }])
@@ -68,6 +70,16 @@ export function ComposeGeneratorForm() {
         throw new Error("At least one service with name and analysis ID is required")
       }
 
+      // Format services as an object with service names as keys
+      const servicesObject: Record<string, { analysis_id: string; port?: number }> = {}
+
+      validServices.forEach((service) => {
+        servicesObject[service.name] = {
+          analysis_id: service.analysisId,
+          ...(service.port ? { port: Number.parseInt(service.port) } : {}),
+        }
+      })
+
       const response = await fetch(`${API_URL}/docker/generate/docker-compose`, {
         method: "POST",
         headers: {
@@ -75,11 +87,8 @@ export function ComposeGeneratorForm() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          services: validServices.map((service) => ({
-            name: service.name,
-            analysis_id: service.analysisId,
-            port: service.port ? Number.parseInt(service.port) : undefined,
-          })),
+          services: servicesObject,
+          name: configName,
         }),
       })
 
@@ -96,11 +105,15 @@ export function ComposeGeneratorForm() {
         description: "docker-compose.yaml has been successfully generated.",
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate docker-compose.yaml. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to generate docker-compose.yaml. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: err instanceof Error ? err.message : "Failed to generate docker-compose.yaml",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to generate docker-compose.yaml",
       })
     } finally {
       setIsLoading(false)
@@ -141,7 +154,7 @@ export function ComposeGeneratorForm() {
       toast({
         variant: "destructive",
         title: "Feedback Failed",
-        description: err instanceof Error ? err.message : "Failed to submit feedback",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to submit feedback",
       })
     }
   }
@@ -164,6 +177,17 @@ export function ComposeGeneratorForm() {
             </Alert>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2 mb-4">
+              <Label htmlFor="config-name">Configuration Name</Label>
+              <Input
+                id="config-name"
+                placeholder="My Docker Compose Configuration"
+                value={configName}
+                onChange={(e) => setConfigName(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+            </div>
             {services.map((service, index) => (
               <div key={index} className="space-y-4 p-4 border rounded-md">
                 <div className="flex justify-between items-center">

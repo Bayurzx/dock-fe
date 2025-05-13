@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Cookies from "js-cookie"
-import type { Configuration } from "@/types"
+import type { Configuration, BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -79,11 +79,15 @@ export function ConfigurationsList() {
       const data = await response.json()
       setConfigurations(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch configurations. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to fetch configurations. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch configurations",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configurations",
       })
     } finally {
       setIsLoading(false)
@@ -123,7 +127,7 @@ export function ConfigurationsList() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch configuration versions",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configuration versions",
       })
       return []
     } finally {
@@ -182,7 +186,7 @@ export function ConfigurationsList() {
       toast({
         variant: "destructive",
         title: "Deletion Failed",
-        description: err instanceof Error ? err.message : "Failed to delete configuration",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to delete configuration",
       })
     } finally {
       setIsDeleteDialogOpen(false)
@@ -242,7 +246,7 @@ export function ConfigurationsList() {
       toast({
         variant: "destructive",
         title: "Feedback Failed",
-        description: err instanceof Error ? err.message : "Failed to submit feedback",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to submit feedback",
       })
     } finally {
       setIsMarkSuccessfulDialogOpen(false)
@@ -287,7 +291,7 @@ export function ConfigurationsList() {
       toast({
         variant: "destructive",
         title: "Revert Failed",
-        description: err instanceof Error ? err.message : "Failed to revert to version",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to revert to version",
       })
     } finally {
       setIsReverting(false)
@@ -344,7 +348,7 @@ export function ConfigurationsList() {
       toast({
         variant: "destructive",
         title: "Update Failed",
-        description: err instanceof Error ? err.message : "Failed to update configuration name",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to update configuration name",
       })
     } finally {
       setIsEditDialogOpen(false)

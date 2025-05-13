@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { GoogleIcon, GithubIcon } from "@/components/service-icons"
+import type { BackendError } from "@/types"
 
 export function RegisterForm() {
   const [fullName, setFullName] = useState("")
@@ -44,7 +45,9 @@ export function RegisterForm() {
       await register(fullName, email, password)
       router.push("/repositories")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to register. Please try again.")
+      setError(
+        err instanceof Error ? (err as BackendError).detail || err.message : "Failed to register. Please try again.",
+      )
     } finally {
       setIsLoading(false)
     }
@@ -54,7 +57,11 @@ export function RegisterForm() {
     try {
       await loginWithGoogle()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login with Google. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to login with Google. Please try again.",
+      )
     }
   }
 
@@ -62,7 +69,11 @@ export function RegisterForm() {
     try {
       await loginWithGithub()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login with GitHub. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to login with GitHub. Please try again.",
+      )
     }
   }
 

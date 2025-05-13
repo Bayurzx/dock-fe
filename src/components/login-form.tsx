@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { GoogleIcon, GithubIcon } from "@/components/service-icons"
+import type { BackendError } from "@/types"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -31,7 +32,7 @@ export function LoginForm() {
       await login(email, password)
       router.push("/repositories")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Incorrect email or password")
+      setError(err instanceof Error ? (err as BackendError).detail || err.message : "Incorrect email or password")
     } finally {
       setIsLoading(false)
     }
@@ -41,7 +42,11 @@ export function LoginForm() {
     try {
       await loginWithGoogle()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login with Google. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to login with Google. Please try again.",
+      )
     }
   }
 
@@ -49,7 +54,11 @@ export function LoginForm() {
     try {
       await loginWithGithub()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login with GitHub. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to login with GitHub. Please try again.",
+      )
     }
   }
 

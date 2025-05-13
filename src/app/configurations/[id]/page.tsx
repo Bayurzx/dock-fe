@@ -31,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { VersionRevertFlow } from "@/components/version-revert-flow"
 import Cookies from "js-cookie"
-import type { Configuration } from "@/types"
+import type { Configuration, BackendError } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -105,11 +105,15 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       setConfiguration(data)
       setNewName(data.name)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch configuration. Please try again.")
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to fetch configuration. Please try again.",
+      )
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch configuration",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configuration",
       })
     } finally {
       setIsLoading(false)
@@ -149,7 +153,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch configuration versions",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configuration versions",
       })
       return []
     } finally {
@@ -182,7 +186,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch version content",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch version content",
       })
       return null
     }
@@ -235,7 +239,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Update Failed",
-        description: err instanceof Error ? err.message : "Failed to update configuration name",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to update configuration name",
       })
     }
   }
@@ -292,7 +296,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Feedback Failed",
-        description: err instanceof Error ? err.message : "Failed to submit feedback",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to submit feedback",
       })
     } finally {
       setIsMarkSuccessfulDialogOpen(false)
@@ -334,7 +338,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Revert Failed",
-        description: err instanceof Error ? err.message : "Failed to revert to version",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to revert to version",
       })
     } finally {
       setIsReverting(false)
@@ -399,7 +403,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Improvement Failed",
-        description: err instanceof Error ? err.message : "Failed to improve configuration",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to improve configuration",
       })
     } finally {
       setIsImproving(false)
@@ -437,7 +441,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       toast({
         variant: "destructive",
         title: "Deletion Failed",
-        description: err instanceof Error ? err.message : "Failed to delete configuration",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to delete configuration",
       })
     } finally {
       setIsDeleteDialogOpen(false)

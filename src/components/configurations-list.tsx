@@ -1,41 +1,33 @@
 "use client"
 
-import { CardFooter } from "@/components/ui/card"
+import { DialogFooter } from "@/components/ui/dialog"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { AlertCircle, Check, Eye, Pencil, Trash } from "lucide-react"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AlertCircle, Check, Eye, History, Pencil, Trash, Sparkles } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Cookies from "js-cookie"
+import type { Configuration } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
-interface Configuration {
-  id: string
-  name: string
-  type: "dockerfile" | "compose"
+interface ConfigVersion {
+  version_number: number
+  content_type: "dockerfile" | "compose"
+  feedback_used?: string
   created_at: string
-  is_verified_good?: boolean
-  content: string
-  docker_compose_content?: string
-  dockerfile_content?: string
 }
 
 export function ConfigurationsList() {
@@ -44,6 +36,12 @@ export function ConfigurationsList() {
   const [error, setError] = useState<string | null>(null)
   const [selectedConfig, setSelectedConfig] = useState<Configuration | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isMarkSuccessfulDialogOpen, setIsMarkSuccessfulDialogOpen] = useState(false)
+  const [markSuccessfulOption, setMarkSuccessfulOption] = useState<"current" | "revert">("current")
+  const [configVersions, setConfigVersions] = useState<ConfigVersion[]>([])
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false)
+  const [selectedVersionNumber, setSelectedVersionNumber] = useState<string>("")
+  const [isReverting, setIsReverting] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -92,10 +90,53 @@ export function ConfigurationsList() {
     }
   }
 
-  // Update the handleViewConfig function to navigate to the detail page instead of opening a dialog:
+  const fetchConfigVersions = async (configId: string) => {
+    setIsLoadingVersions(true)
+    try {
+      const token = Cookies.get("token")
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`${API_URL}/docker/configs/${configId}/versions`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to fetch configuration versions")
+      }
+
+      const data = await response.json()
+      setConfigVersions(data)
+
+      // If there are versions, select the latest one by default (excluding the current version)
+      if (data.length > 1) {
+        setSelectedVersionNumber(data[1].version_number.toString())
+      }
+
+      return data
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to fetch configuration versions",
+      })
+      return []
+    } finally {
+      setIsLoadingVersions(false)
+    }
+  }
 
   const handleViewConfig = (config: Configuration) => {
     router.push(`/configurations/${config.id}`)
+  }
+
+  const handleViewVersions = (config: Configuration) => {
+    router.push(`/configurations/${config.id}/versions`)
   }
 
   const handleDeleteConfig = (config: Configuration) => {
@@ -150,6 +191,21 @@ export function ConfigurationsList() {
   }
 
   const handleMarkAsSuccessful = async (config: Configuration) => {
+    setSelectedConfig(config)
+
+    // Check if there are previous versions
+    const versions = await fetchConfigVersions(config.id)
+
+    if (versions.length > 1) {
+      // If there are previous versions, show the dialog
+      setIsMarkSuccessfulDialogOpen(true)
+    } else {
+      // If there are no previous versions, mark the current version as successful directly
+      markCurrentAsSuccessful(config.id)
+    }
+  }
+
+  const markCurrentAsSuccessful = async (configId: string) => {
     try {
       const token = Cookies.get("token")
       if (!token) {
@@ -157,7 +213,7 @@ export function ConfigurationsList() {
         return
       }
 
-      const response = await fetch(`${API_URL}/docker/configs/${config.id}/mark_successful`, {
+      const response = await fetch(`${API_URL}/docker/configs/${configId}/mark_successful`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +230,7 @@ export function ConfigurationsList() {
       }
 
       // Update the local state
-      setConfigurations(configurations.map((c) => (c.id === config.id ? { ...c, is_verified_good: true } : c)))
+      setConfigurations(configurations.map((c) => (c.id === configId ? { ...c, is_verified_good: true } : c)))
 
       toast({
         title: "Feedback Submitted",
@@ -188,6 +244,65 @@ export function ConfigurationsList() {
         title: "Feedback Failed",
         description: err instanceof Error ? err.message : "Failed to submit feedback",
       })
+    } finally {
+      setIsMarkSuccessfulDialogOpen(false)
+      setSelectedConfig(null)
+    }
+  }
+
+  const handleRevertToVersion = async () => {
+    if (!selectedConfig || !selectedVersionNumber) return
+
+    setIsReverting(true)
+    try {
+      const token = Cookies.get("token")
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(
+        `${API_URL}/docker/configs/${selectedConfig.id}/versions/${selectedVersionNumber}/revert`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to revert to version")
+      }
+
+      toast({
+        title: "Version Reverted",
+        description: `Successfully reverted to version ${selectedVersionNumber}`,
+      })
+
+      // Refresh configurations list
+      await fetchConfigurations()
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Revert Failed",
+        description: err instanceof Error ? err.message : "Failed to revert to version",
+      })
+    } finally {
+      setIsReverting(false)
+      setIsMarkSuccessfulDialogOpen(false)
+      setSelectedConfig(null)
+    }
+  }
+
+  const handleMarkSuccessfulSubmit = async () => {
+    if (!selectedConfig) return
+
+    if (markSuccessfulOption === "current") {
+      await markCurrentAsSuccessful(selectedConfig.id)
+    } else if (markSuccessfulOption === "revert" && selectedVersionNumber) {
+      await handleRevertToVersion()
     }
   }
 
@@ -268,6 +383,7 @@ export function ConfigurationsList() {
               <Skeleton className="h-8 w-8 rounded-full" />
               <Skeleton className="h-8 w-8 rounded-full" />
               <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-full" />
             </div>
           </TableCell>
         </TableRow>
@@ -283,7 +399,7 @@ export function ConfigurationsList() {
           <div className="flex items-center gap-2">
             <Badge variant="outline">{config.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}</Badge>
             {config.is_verified_good ? (
-              <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Successful</Badge>
+              <Badge variant="success">Successful</Badge>
             ) : (
               <Badge variant="outline">Pending feedback</Badge>
             )}
@@ -296,6 +412,10 @@ export function ConfigurationsList() {
           <Button variant="ghost" size="sm" onClick={() => handleViewConfig(config)} className="h-8 w-8 p-0">
             <Eye className="h-4 w-4" />
             <span className="sr-only">View</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleViewVersions(config)} className="h-8 w-8 p-0">
+            <History className="h-4 w-4" />
+            <span className="sr-only">Versions</span>
           </Button>
           <Button variant="ghost" size="sm" onClick={() => handleEditConfig(config)} className="h-8 w-8 p-0">
             <Pencil className="h-4 w-4" />
@@ -336,6 +456,12 @@ export function ConfigurationsList() {
           <CardDescription>
             View and manage your saved Dockerfile and docker-compose.yaml configurations.
           </CardDescription>
+          <div className="flex justify-end mt-2">
+            <Button onClick={() => router.push("/configurations/improve")} className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Improve Configurations
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -380,13 +506,13 @@ export function ConfigurationsList() {
                         <TableCell className="font-medium">{config.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {config.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"}
+                            {config.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDate(config.created_at)}</TableCell>
                         <TableCell>
                           {config.is_verified_good ? (
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Successful</Badge>
+                            <Badge variant="success">Successful</Badge>
                           ) : (
                             <Badge variant="outline">Pending feedback</Badge>
                           )}
@@ -401,6 +527,15 @@ export function ConfigurationsList() {
                             >
                               <Eye className="h-4 w-4" />
                               <span className="sr-only">View</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewVersions(config)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <History className="h-4 w-4" />
+                              <span className="sr-only">Versions</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -461,6 +596,73 @@ export function ConfigurationsList() {
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark as Successful Dialog with Version Options */}
+      <Dialog open={isMarkSuccessfulDialogOpen} onOpenChange={setIsMarkSuccessfulDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Mark Configuration as Successful</DialogTitle>
+            <DialogDescription>
+              This configuration has previous versions. Would you like to mark the current version as successful or
+              revert to a previous version?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <RadioGroup
+              value={markSuccessfulOption}
+              onValueChange={(value) => setMarkSuccessfulOption(value as "current" | "revert")}
+            >
+              <div className="flex items-center space-x-2 mb-4">
+                <RadioGroupItem value="current" id="current" />
+                <Label htmlFor="current">Mark current version as successful</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="revert" id="revert" />
+                <Label htmlFor="revert">Revert to a previous version</Label>
+              </div>
+            </RadioGroup>
+
+            {markSuccessfulOption === "revert" && (
+              <div className="mt-4 space-y-2">
+                <Label htmlFor="version-select">Select Version</Label>
+                {isLoadingVersions ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Select
+                    value={selectedVersionNumber}
+                    onValueChange={setSelectedVersionNumber}
+                    disabled={configVersions.length <= 1}
+                  >
+                    <SelectTrigger id="version-select">
+                      <SelectValue placeholder="Select a version" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {configVersions
+                        .filter((v, i) => i > 0) // Skip the current version (index 0)
+                        .map((version) => (
+                          <SelectItem key={version.version_number} value={version.version_number.toString()}>
+                            Version {version.version_number} - {formatDate(version.created_at)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMarkSuccessfulDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleMarkSuccessfulSubmit}
+              disabled={isReverting || (markSuccessfulOption === "revert" && !selectedVersionNumber)}
+            >
+              {isReverting ? "Processing..." : "Confirm"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -34,6 +34,12 @@ export function Header() {
                   <Link href="/configurations" className="text-sm font-medium transition-colors hover:text-primary">
                     Configurations
                   </Link>
+                  <Link
+                    href="/configurations/improve"
+                    className="text-sm font-medium transition-colors hover:text-primary"
+                  >
+                    Improve Configs
+                  </Link>
                 </>
               )}
             </nav>

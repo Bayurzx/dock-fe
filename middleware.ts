@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 // List of paths that require authentication
-const protectedPaths = ["/repositories", "/configurations", "/compose-generator"]
-
+const protectedPaths = ["/repositories", "/configurations", "/compose-generator", "/configurations/improve"]
+// const protectedPaths = ["/repositories", "/configurations", "/compose-generator"]
 // List of paths that should redirect to dashboard if already authenticated
 const authPaths = ["/login", "/register"]
 

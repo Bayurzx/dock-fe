@@ -14,7 +14,7 @@ import { CodeDisplay } from "@/components/code-display"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import Cookies from "js-cookie"
-import type { BackendError } from "@/types"
+import type { BackendError, ErrorResponse } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -70,8 +70,8 @@ export default function ConfigImprovementHub() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configurations")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configurations")
       }
 
       const data = await response.json()
@@ -121,8 +121,8 @@ export default function ConfigImprovementHub() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configuration details")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configuration details")
       }
 
       const data = await response.json()
@@ -177,8 +177,8 @@ export default function ConfigImprovementHub() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to improve configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to improve configuration")
       }
 
       const data = await response.json()

@@ -15,7 +15,7 @@ import { AnalysisResults } from "@/components/analysis-results"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AnalysisSelectorDropdown } from "@/components/analysis-selector-dropdown"
 import Cookies from "js-cookie"
-import type { AnalysisResult, BackendError } from "@/types"
+import type { AnalysisResult, BackendError, ErrorResponse } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -68,8 +68,8 @@ export function RepositoryForm() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to analyze repository")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to analyze repository")
       }
 
       const data = await response.json()
@@ -117,8 +117,8 @@ export function RepositoryForm() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to load analysis")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to load analysis")
       }
 
       const data = await response.json()

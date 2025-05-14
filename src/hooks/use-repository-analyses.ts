@@ -5,6 +5,7 @@ import Cookies from "js-cookie"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import type { AnalysisOption } from "@/components/analysis-selector"
+import { ErrorResponse, Repos } from "@/types"
 
 // API base URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -51,14 +52,14 @@ export function useRepositoryAnalyses() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch repository analyses")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch repository analyses")
       }
 
       const data = await response.json()
 
       // Transform the data for the dropdown
-      const transformedData = data.map((repo: any) => ({
+      const transformedData = data.map((repo: Repos) => ({
         id: repo.id,
         display_name: `${repo.repo_url} @ ${repo.branch || "default"}`,
         repo_url: repo.repo_url,

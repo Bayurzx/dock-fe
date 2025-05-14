@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Cookies from "js-cookie"
-import type { Configuration, BackendError } from "@/types"
+import type { Configuration, BackendError, ErrorResponse } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -72,8 +72,8 @@ export function ConfigurationsList() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configurations")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configurations")
       }
 
       const data = await response.json()
@@ -110,8 +110,8 @@ export function ConfigurationsList() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configuration versions")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configuration versions")
       }
 
       const data = await response.json()
@@ -173,8 +173,8 @@ export function ConfigurationsList() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to delete configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to delete configuration")
       }
 
       setConfigurations(configurations.filter((config) => config.id !== selectedConfig.id))
@@ -229,8 +229,8 @@ export function ConfigurationsList() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to submit feedback")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to submit feedback")
       }
 
       // Update the local state
@@ -276,8 +276,8 @@ export function ConfigurationsList() {
       )
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to revert to version")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to revert to version")
       }
 
       toast({
@@ -333,8 +333,8 @@ export function ConfigurationsList() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to update configuration name")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to update configuration name")
       }
 
       // Update the local state

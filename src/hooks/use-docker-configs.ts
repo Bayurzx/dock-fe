@@ -5,6 +5,7 @@ import Cookies from "js-cookie"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import type { ConfigOption } from "@/components/configuration-selector"
+import { ErrorResponse } from "@/types"
 
 // API base URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -51,8 +52,8 @@ export function useDockerConfigs() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch Docker configurations")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch Docker configurations")
       }
 
       const data = await response.json()

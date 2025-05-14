@@ -130,3 +130,38 @@ export interface Service {
   analysisId: string
   port?: string
 }
+
+export interface Repos {
+  id: number;
+  repo_url: string;
+  branch: string;
+  git_hash: string;
+
+  dependencies?: {
+    pip?: string[];
+    npm?: string[];
+  };
+  framework?: string;
+  analysis?: {
+    project_type?: string;
+    recommended_base_image?: string;
+    required_packages?: string[];
+    dependency_install_command?: string;
+    build_steps?: string[];
+    exposed_ports?: number[];
+    environment_variables?: string[];
+    volumes?: string[]; // assuming volumes are paths or names
+    run_command?: string[] | string;
+    working_directory?: string;
+    detected_database?: string | null;
+    other_services?: string[]; // assuming list of service names
+    summary?: string;
+  };
+  recommended_base_image?: string;
+  ports?: number[];
+  build_steps?: string[];
+  run_command?: string[] | string;
+  environment_variables?: string[];
+  volumes?: string[];
+  analyzed_at?: string; // ISO 8601 timestamp
+}

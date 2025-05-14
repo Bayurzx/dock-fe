@@ -31,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { VersionRevertFlow } from "@/components/version-revert-flow"
 import Cookies from "js-cookie"
-import type { Configuration, BackendError } from "@/types"
+import type { Configuration, BackendError, ErrorResponse } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -97,8 +97,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configuration")
       }
 
       const data = await response.json()
@@ -136,8 +136,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configuration versions")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configuration versions")
       }
 
       const data = await response.json()
@@ -176,8 +176,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch version content")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch version content")
       }
 
       const data = await response.json()
@@ -225,8 +225,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to update configuration name")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to update configuration name")
       }
 
       setConfiguration({ ...configuration, name: newName })
@@ -281,8 +281,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to submit feedback")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to submit feedback")
       }
 
       setConfiguration({ ...configuration, is_verified_good: true })
@@ -322,8 +322,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to revert to version")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to revert to version")
       }
 
       toast({
@@ -378,8 +378,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to improve configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to improve configuration")
       }
 
       const data = await response.json()
@@ -428,8 +428,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to delete configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to delete configuration")
       }
 
       toast({

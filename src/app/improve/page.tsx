@@ -17,6 +17,7 @@ import { CodeDisplay } from "@/components/code-display"
 import { ConfigurationSelector } from "@/components/configuration-selector"
 import { useDockerConfigs } from "@/hooks/use-docker-configs"
 import Cookies from "js-cookie"
+import { ErrorResponse } from "@/types"
 
 // API base URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -60,8 +61,8 @@ export default function ImproveConfigPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to improve configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to improve configuration")
       }
 
       const data = await response.json()

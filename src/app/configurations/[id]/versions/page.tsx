@@ -25,7 +25,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { VersionRevertFlow } from "@/components/version-revert-flow"
 import Cookies from "js-cookie"
-import type { BackendError } from "@/types"
+import type { BackendError, ErrorResponse } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -83,8 +83,8 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configuration")
       }
 
       const data = await response.json()
@@ -118,8 +118,8 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch versions")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch versions")
       }
 
       const data = await response.json()
@@ -155,8 +155,8 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to fetch version content")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch version content")
       }
 
       const data = await response.json()
@@ -232,8 +232,8 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
       )
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to revert to version")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to revert to version")
       }
 
       toast({

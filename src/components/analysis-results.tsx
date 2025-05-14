@@ -22,7 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Cookies from "js-cookie"
-import type { AnalysisResultsProps, BackendError } from "@/types"
+import type { AnalysisResultsProps, BackendError, ErrorResponse } from "@/types"
 
 // API base URL - would typically come from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
@@ -62,8 +62,8 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to generate Dockerfile")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to generate Dockerfile")
       }
 
       const data = await response.json()
@@ -111,8 +111,8 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to submit feedback")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to submit feedback")
       }
 
       toast({
@@ -152,8 +152,8 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to improve configuration")
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to improve configuration")
       }
 
       const data = await response.json()

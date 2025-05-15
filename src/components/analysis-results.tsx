@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -38,6 +38,13 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
   const { toast } = useToast()
   const router = useRouter()
 
+  // Debug logging to help identify issues
+  useEffect(() => {
+    console.log("Dockerfile state:", dockerfile)
+    console.log("ConfigId state:", configId)
+    console.log("IsGenerating state:", isGenerating)
+  }, [dockerfile, configId, isGenerating])
+
   const generateDockerfile = async () => {
     setError(null)
     setIsGenerating(true)
@@ -67,13 +74,33 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       }
 
       const data = await response.json()
-      setDockerfile(data.content)
+      console.log("API Response:", data) // Debug log
+
+      // Ensure we have content before updating state
+      if (!data.dockerfile_content) {
+        throw new Error("No Dockerfile content received from the server")
+      }
+
+      setDockerfile(data.dockerfile_content)
       setConfigId(data.id)
+
       toast({
         title: "Dockerfile Generated",
-        description: "Dockerfile has been successfully generated.",
+        description: (
+          <div className="flex flex-col space-y-2">
+            <span>Dockerfile has been successfully generated.</span>
+            <Button
+              variant="link"
+              className="p-0 h-auto font-normal justify-start text-blue-500 dark:text-blue-400"
+              onClick={() => router.push(`/configurations/${data.id}`)}
+            >
+              View configuration details →
+            </Button>
+          </div>
+        ),
       })
     } catch (err) {
+      console.error("Generation error:", err) // Debug log
       setError(
         err instanceof Error
           ? (err as BackendError).detail || err.message
@@ -157,7 +184,7 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       }
 
       const data = await response.json()
-      setDockerfile(data.content)
+      setDockerfile(data.dockerfile_content)
       setImprovementFeedback("")
       setIsDialogOpen(false)
 
@@ -179,6 +206,12 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
   const viewVersionHistory = () => {
     if (configId) {
       router.push(`/configurations/${configId}/versions`)
+    }
+  }
+
+  const viewConfigDetails = () => {
+    if (configId) {
+      router.push(`/configurations/${configId}`)
     }
   }
 
@@ -358,8 +391,8 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         </Card>
       )}
 
-      {dockerfile && (
-        <Card>
+      {!isGenerating && dockerfile && (
+        <Card id="dockerfile-card">
           <CardHeader>
             <CardTitle>Generated Dockerfile</CardTitle>
             <CardDescription>
@@ -370,44 +403,50 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
           <CardContent>
             <CodeDisplay code={dockerfile} language="dockerfile" />
           </CardContent>
-          <CardFooter className="flex flex-wrap justify-end gap-2">
-            {configId && (
-              <Button variant="outline" onClick={viewVersionHistory}>
-                <History className="mr-2 h-4 w-4" />
-                Version History
-              </Button>
-            )}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">Improve Configuration</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Improve Configuration</DialogTitle>
-                  <DialogDescription>
-                    Provide feedback or instructions to improve this configuration. Be specific about what you want to
-                    change.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <Textarea
-                    placeholder="e.g., Add curl and wget to the image, or Use a multi-stage build to reduce image size"
-                    value={improvementFeedback}
-                    onChange={(e) => setImprovementFeedback(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleImproveConfig} disabled={isImproving || !improvementFeedback.trim()}>
-                    {isImproving ? "Improving..." : "Submit Feedback"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button variant="outline" onClick={handleMarkAsSuccessful}>
-              <Check className="mr-2 h-4 w-4" />
-              Mark as Successful
+          <CardFooter className="flex flex-wrap justify-between gap-2">
+            <Button variant="default" onClick={viewConfigDetails}>
+              <FileText className="mr-2 h-4 w-4" />
+              View Configuration Details
             </Button>
+            <div className="flex flex-wrap gap-2">
+              {configId && (
+                <Button variant="outline" onClick={viewVersionHistory}>
+                  <History className="mr-2 h-4 w-4" />
+                  Version History
+                </Button>
+              )}
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">Improve Configuration</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Improve Configuration</DialogTitle>
+                    <DialogDescription>
+                      Provide feedback or instructions to improve this configuration. Be specific about what you want to
+                      change.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <Textarea
+                      placeholder="e.g., Add curl and wget to the image, or Use a multi-stage build to reduce image size"
+                      value={improvementFeedback}
+                      onChange={(e) => setImprovementFeedback(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleImproveConfig} disabled={isImproving || !improvementFeedback.trim()}>
+                      {isImproving ? "Improving..." : "Submit Feedback"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" onClick={handleMarkAsSuccessful}>
+                <Check className="mr-2 h-4 w-4" />
+                Mark as Successful
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       )}

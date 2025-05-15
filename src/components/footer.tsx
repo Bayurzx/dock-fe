@@ -9,13 +9,13 @@ export function Footer() {
             &copy; {new Date().getFullYear()} DockerHelper. All rights reserved.
           </div>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <a href="#" className="transition-colors hover:text-primary">
+            <a href="/terms" className="transition-colors hover:text-primary">
               Terms
             </a>
-            <a href="#" className="transition-colors hover:text-primary">
+            <a href="/privacy" className="transition-colors hover:text-primary">
               Privacy
             </a>
-            <a href="#" className="transition-colors hover:text-primary">
+            <a href="/contact" className="transition-colors hover:text-primary">
               Contact
             </a>
           </div>

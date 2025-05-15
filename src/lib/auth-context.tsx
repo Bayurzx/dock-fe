@@ -5,6 +5,9 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import Cookies from "js-cookie"
 
+// Add import for BackendError
+import type { BackendError } from "@/types"
+
 // Define user type
 interface User {
   id: string
@@ -165,7 +168,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse
-        throw new Error(errorData.detail || "Login failed")
+        throw new Error((errorData as BackendError).detail || "Login failed")
       }
 
       const { access_token, token_type } = await response.json()

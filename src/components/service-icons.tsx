@@ -34,3 +34,21 @@ export function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+export function GitlabIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" {...props}>
+      <path
+        fill="#FC6D26"
+        d="M23.6 9.5l-.9-2.7L20.2.5c-.2-.5-.8-.5-1 0L16.7 7H7.3L4.8.5c-.2-.5-.8-.5-1 0L1.3 6.8.4 9.5c-.1.4 0 .8.3 1.1l11.3 8.2 11.3-8.2c.3-.3.4-.7.3-1.1"
+      />
+      <path fill="#E24329" d="M12 18.8l4.3-13.2H7.7z" />
+      <path fill="#FC6D26" d="M12 18.8L7.7 5.6H1.3z" />
+      <path fill="#FCA326" d="M1.3 6.8L.4 9.5c-.1.4 0 .8.3 1.1L12 18.8 1.3 6.8z" />
+      <path fill="#E24329" d="M1.3 6.8h6.4L4.8.5c-.2-.5-.8-.5-1 0L1.3 6.8z" />
+      <path fill="#FC6D26" d="M12 18.8l4.3-13.2h6.4z" />
+      <path fill="#FCA326" d="M22.7 6.8l.9 2.7c.1.4 0 .8-.3 1.1L12 18.8 22.7 6.8z" />
+      <path fill="#E24329" d="M22.7 6.8h-6.4L19.2.5c.2-.5.8-.5 1 0l2.5 6.3z" />
+    </svg>
+  )
+}

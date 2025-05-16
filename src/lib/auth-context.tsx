@@ -35,6 +35,7 @@ interface AuthContextType {
   register: (fullName: string, email: string, password: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
   loginWithGithub: () => Promise<void>
+  loginWithGitlab: () => Promise<void> // Add GitLab login function
   logout: () => void
   isLoading: boolean
 }
@@ -55,6 +56,7 @@ const OAUTH_CALLBACK_URL = process.env.NEXT_PUBLIC_OAUTH_CALLBACK_URL || `${APP_
 // Feature flags
 const ENABLE_GITHUB_LOGIN = process.env.NEXT_PUBLIC_ENABLE_GITHUB_LOGIN !== "false"
 const ENABLE_GOOGLE_LOGIN = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN !== "false"
+const ENABLE_GITLAB_LOGIN = process.env.NEXT_PUBLIC_ENABLE_GITLAB_LOGIN !== "false" // Add GitLab feature flag
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
@@ -278,6 +280,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     window.location.href = redirectUrl
   }
 
+  // Login with GitLab
+  const loginWithGitlab = async () => {
+    if (!ENABLE_GITLAB_LOGIN) {
+      toast({
+        variant: "destructive",
+        title: "GitLab login disabled",
+        description: "GitLab login is currently disabled.",
+      })
+      return
+    }
+
+    // Get the current URL to use as a callback
+    const callbackUrl = pathname !== "/login" && pathname !== "/register" ? pathname : "/repositories"
+
+    // Construct the redirect URL
+    const redirectUrl = `${API_URL}/auth/login/gitlab?callbackUrl=${encodeURIComponent(OAUTH_CALLBACK_URL)}?callbackUrl=${encodeURIComponent(callbackUrl)}`
+
+    // Redirect to GitLab OAuth endpoint
+    window.location.href = redirectUrl
+  }
+
   // Logout
   const logout = () => {
     Cookies.remove("token")
@@ -295,6 +318,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     loginWithGoogle,
     loginWithGithub,
+    loginWithGitlab, // Add GitLab login function to context
     logout,
     isLoading,
   }

@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { BackendError } from "@/types"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -12,8 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { GoogleIcon, GithubIcon } from "@/components/service-icons"
-import type { BackendError } from "@/types"
+import { GoogleIcon, GithubIcon, GitlabIcon } from "@/components/service-icons"
 
 export function RegisterForm() {
   const [fullName, setFullName] = useState("")
@@ -22,7 +22,7 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { register, loginWithGoogle, loginWithGithub } = useAuth()
+  const { register, loginWithGoogle, loginWithGithub, loginWithGitlab } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +73,18 @@ export function RegisterForm() {
         err instanceof Error
           ? (err as BackendError).detail || err.message
           : "Failed to login with GitHub. Please try again.",
+      )
+    }
+  }
+
+  const handleGitlabLogin = async () => {
+    try {
+      await loginWithGitlab()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to login with GitLab. Please try again.",
       )
     }
   }
@@ -158,7 +170,7 @@ export function RegisterForm() {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-3">
             <Button variant="outline" type="button" onClick={handleGoogleLogin} className="hover-scale">
               <GoogleIcon className="mr-2 h-4 w-4" />
               Google
@@ -166,6 +178,10 @@ export function RegisterForm() {
             <Button variant="outline" type="button" onClick={handleGithubLogin} className="hover-scale">
               <GithubIcon className="mr-2 h-4 w-4" />
               GitHub
+            </Button>
+            <Button variant="outline" type="button" onClick={handleGitlabLogin} className="hover-scale">
+              <GitlabIcon className="mr-2 h-4 w-4" />
+              GitLab
             </Button>
           </div>
         </div>

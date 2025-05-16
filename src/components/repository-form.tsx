@@ -31,9 +31,11 @@ export function RepositoryForm() {
   const router = useRouter()
 
   const validateRepoUrl = (url: string) => {
-    // Basic validation for Git repository URLs
-    const gitUrlPattern = /^(https?:\/\/)?(www\.)?github\.com\/[\w-]+\/[\w.-]+(\/?|\.git)?$/
-    return gitUrlPattern.test(url)
+    // Basic validation for Git repository URLs (GitHub and GitLab)
+    const githubUrlPattern = /^(https?:\/\/)?(www\.)?github\.com\/[\w-]+\/[\w.-]+(\/?|\.git)?$/
+    const gitlabUrlPattern = /^(https?:\/\/)?(www\.)?gitlab\.com\/[\w-]+\/[\w.-]+(\/?|\.git)?$/
+
+    return githubUrlPattern.test(url) || gitlabUrlPattern.test(url)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,7 +44,7 @@ export function RepositoryForm() {
 
     // Validate repository URL
     if (!validateRepoUrl(repoUrl)) {
-      setError("Please enter a valid GitHub repository URL")
+      setError("Please enter a valid GitHub or GitLab repository URL")
       return
     }
 
@@ -169,7 +171,7 @@ export function RepositoryForm() {
                   <Label htmlFor="repoUrl">Git Repository URL</Label>
                   <Input
                     id="repoUrl"
-                    placeholder="https://github.com/username/repository"
+                    placeholder="https://github.com/username/repository or https://gitlab.com/username/repository"
                     value={repoUrl}
                     onChange={(e) => setRepoUrl(e.target.value)}
                     disabled={isLoading}
@@ -177,7 +179,8 @@ export function RepositoryForm() {
                     className="transition-all duration-200 focus:ring-2 focus:ring-primary"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Enter a valid GitHub repository URL (e.g., https://github.com/username/repository)
+                    Enter a valid GitHub or GitLab repository URL (e.g., https://github.com/username/repository or
+                    https://gitlab.com/username/repository)
                   </p>
                 </div>
                 <div className="space-y-2">

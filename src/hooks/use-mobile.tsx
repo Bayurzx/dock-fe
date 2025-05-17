@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
@@ -40,4 +42,37 @@ export function useMobile() {
   }, [])
 
   return isMobile
+}
+
+// Add the new useMediaQuery hook
+export function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(false)
+
+  React.useEffect(() => {
+    // Check if window is defined (client-side)
+    if (typeof window !== "undefined") {
+      const media = window.matchMedia(query)
+
+      // Set initial value
+      setMatches(media.matches)
+
+      // Define callback for media query change
+      const listener = (event: MediaQueryListEvent) => {
+        setMatches(event.matches)
+      }
+
+      // Add event listener
+      media.addEventListener("change", listener)
+
+      // Clean up
+      return () => {
+        media.removeEventListener("change", listener)
+      }
+    }
+
+    // Default to false on server
+    return () => {}
+  }, [query])
+
+  return matches
 }

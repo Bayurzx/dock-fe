@@ -7,12 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Container } from "@/components/ui/container"
 import { useMediaQuery } from "@/hooks/use-mobile"
 import { Waves } from "@/components/waves-animation"
+import { SearchParamsComponent } from "@/components/search-param"
 
 // Create a client component that uses useSearchParams
-function SearchParamsComponent() {
-  return null
-}
-
 export default function NotFound() {
   const [isLoaded, setIsLoaded] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
@@ -239,7 +236,7 @@ export default function NotFound() {
       </div>
 
       {/* This Suspense boundary is required for useSearchParams */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<>🌀</>}>
         <SearchParamsComponent />
       </Suspense>
     </Container>

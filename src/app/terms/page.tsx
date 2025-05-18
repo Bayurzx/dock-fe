@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/container"
 import type { Metadata } from "next"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Terms of Service | DockerHelper",
@@ -120,9 +121,9 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold text-foreground">10. Contact Us</h2>
             <p>
               If you have any questions about these Terms, please contact us at{" "}
-              <a href="mailto:support@iglumtech.com" className="text-primary hover:underline">
+              <Link href="mailto:support@iglumtech.com" className="text-primary hover:underline">
                 support@iglumtech.com
-              </a>
+              </Link>
               .
             </p>
           </section>

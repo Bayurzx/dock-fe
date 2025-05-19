@@ -25,7 +25,7 @@ export default function OAuthCallbackPage() {
 
       // Check for token parameter (successful login)
       const token = searchParams?.get("token")
-      const tokenType = searchParams?.get("token_type") || "bearer"
+      // const tokenType = searchParams?.get("token_type") || "bearer"
 
       // Get the callback URL or default to repositories
       const callbackUrl = searchParams?.get("callbackUrl") || "/repositories"

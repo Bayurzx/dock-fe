@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Cookies from "js-cookie"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
@@ -22,7 +22,7 @@ export function useRepositoryAnalyses() {
   const { toast } = useToast()
   const router = useRouter()
 
-  const fetchAnalyses = async (forceRefresh = false) => {
+  const fetchAnalyses = useCallback(async (forceRefresh = false) => {
     setIsLoading(true)
     setError(null)
 
@@ -82,11 +82,11 @@ export function useRepositoryAnalyses() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [router, toast]) // Add dependencies
 
   useEffect(() => {
     fetchAnalyses()
-  }, [])
+  }, [fetchAnalyses]) // Add fetchAnalyses to dependencies
 
   return { analyses, isLoading, error, refreshAnalyses: () => fetchAnalyses(true) }
 }

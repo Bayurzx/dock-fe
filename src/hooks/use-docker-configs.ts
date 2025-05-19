@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Cookies from "js-cookie"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
@@ -22,7 +22,7 @@ export function useDockerConfigs() {
   const { toast } = useToast()
   const router = useRouter()
 
-  const fetchConfigs = async (forceRefresh = false) => {
+  const fetchConfigs = useCallback(async (forceRefresh = false) => {
     setIsLoading(true)
     setError(null)
 
@@ -73,11 +73,11 @@ export function useDockerConfigs() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [router, toast]) // Add dependencies
 
   useEffect(() => {
     fetchConfigs()
-  }, [])
+  }, [fetchConfigs]) // Add fetchConfigs to dependencies
 
   return { configs, isLoading, error, refreshConfigs: () => fetchConfigs(true) }
 }

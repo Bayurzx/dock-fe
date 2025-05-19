@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import Cookies from "js-cookie"
@@ -66,54 +66,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const searchParams = useSearchParams()
   const { toast } = useToast()
 
-  // Check for token in URL (OAuth callback)
-  useEffect(() => {
-    const checkUrlForToken = () => {
-      // Check if we're on the login callback page
-      if (pathname === "/login/callback") {
-        const token = searchParams?.get("token")
-        const error = searchParams?.get("error")
-
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Authentication Failed",
-            description: error,
-          })
-          return
-        }
-
-        if (token) {
-          // Store the token in a cookie
-          Cookies.set("token", token, { secure: true, sameSite: "strict" })
-
-          // Fetch user data with the new token
-          fetchUserData(token)
-
-          toast({
-            title: "Authentication Successful",
-            description: "You have been successfully logged in.",
-          })
-        }
-      }
-    }
-
-    checkUrlForToken()
-  }, [pathname, searchParams, toast])
-
-  // Check for existing token on load
-  useEffect(() => {
-    const token = Cookies.get("token")
-
-    if (token) {
-      fetchUserData(token)
-    } else {
-      setIsLoading(false)
-    }
-  }, [])
-
   // Fetch user data with token
-  const fetchUserData = async (token: string) => {
+  const fetchUserData = useCallback(async (token: string) => {
     try {
       const response = await fetch(`${API_URL}/users/me`, {
         headers: {
@@ -150,7 +104,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [pathname, toast]) // Add dependencies
+
+  // Check for token in URL (OAuth callback)
+  useEffect(() => {
+    const checkUrlForToken = () => {
+      // Check if we're on the login callback page
+      if (pathname === "/login/callback") {
+        const token = searchParams?.get("token")
+        const error = searchParams?.get("error")
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Authentication Failed",
+            description: error,
+          })
+          return
+        }
+
+        if (token) {
+          // Store the token in a cookie
+          Cookies.set("token", token, { secure: true, sameSite: "strict" })
+
+          // Fetch user data with the new token
+          fetchUserData(token)
+
+          toast({
+            title: "Authentication Successful",
+            description: "You have been successfully logged in.",
+          })
+        }
+      }
+    }
+
+    checkUrlForToken()
+  }, [pathname, searchParams, toast, fetchUserData]) // Add fetchUserData
+
+  // Check for existing token on load
+  useEffect(() => {
+    const token = Cookies.get("token")
+
+    if (token) {
+      fetchUserData(token)
+    } else {
+      setIsLoading(false)
+    }
+  }, [fetchUserData]) // Add fetchUserData
+
 
   // Login with email/password
   const login = async (email: string, password: string) => {
@@ -173,7 +174,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error((errorData as BackendError).detail || "Login failed")
       }
 
-      const { access_token, token_type } = await response.json()
+      const { access_token } = await response.json()
 
       // Store token in a cookie
       Cookies.set("token", access_token, { secure: true, sameSite: "strict" })
@@ -220,7 +221,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
 
-      const { access_token, token_type } = await response.json()
+      const { access_token } = await response.json()
 
       // Store token in a cookie
       Cookies.set("token", access_token, { secure: true, sameSite: "strict" })

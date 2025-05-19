@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/container"
 import type { Metadata } from "next"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Privacy Policy | DockerHelper",
@@ -157,9 +158,9 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-semibold text-foreground">10. Contact Us</h2>
             <p>
               If you have any questions about this Privacy Policy, please contact us at{" "}
-              <a href="mailto:privacy@dockerhelper.com" className="text-primary hover:underline">
+              <Link href="mailto:privacy@dockerhelper.com" className="text-primary hover:underline">
                 privacy@dockerhelper.com
-              </a>
+              </Link>
               .
             </p>
           </section>

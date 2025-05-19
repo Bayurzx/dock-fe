@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   experimental: {
-    missingSuspenseWithCSRBailout: false,
+    // missingSuspenseWithCSRBailout: false,
   },
 
 };

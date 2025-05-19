@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,11 +57,8 @@ export function VersionRevertFlow({
   const { toast } = useToast()
   const router = useRouter()
 
-  useEffect(() => {
-    fetchVersions()
-  }, [configId])
 
-  const fetchVersions = async () => {
+  const fetchVersions = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -101,8 +98,14 @@ export function VersionRevertFlow({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [configId, router, toast]) // 2. Add dependencies
 
+  // 3. Update useEffect dependencies
+  useEffect(() => {
+    fetchVersions()
+  }, [fetchVersions]) // 4. Now uses memoized function
+
+  
   const handleRevertToVersion = async () => {
     if (!selectedVersionNumber) return
 

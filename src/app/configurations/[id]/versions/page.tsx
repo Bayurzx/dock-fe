@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { use } from "react"
 import { Header } from "@/components/header"
@@ -62,12 +62,7 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
   const { toast } = useToast()
   const router = useRouter()
 
-  useEffect(() => {
-    fetchConfiguration()
-    fetchVersions()
-  }, [configId])
-
-  const fetchConfiguration = async () => {
+  const fetchConfiguration = useCallback(async () => {
     setIsLoadingConfig(true)
     try {
       const token = Cookies.get("token")
@@ -98,9 +93,10 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
     } finally {
       setIsLoadingConfig(false)
     }
-  }
+  }, [configId, router]) // Add dependencies
 
-  const fetchVersions = async () => {
+
+  const fetchVersions = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -138,7 +134,13 @@ export default function ConfigurationVersionsPage({ params }: { params: Promise<
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [configId, router, toast]) // Add dependencies
+
+
+  useEffect(() => {
+    fetchConfiguration()
+    fetchVersions()
+  }, [fetchConfiguration, fetchVersions]) // Add functions to dependencies
 
   const fetchVersionContent = async (versionNumber: number) => {
     try {

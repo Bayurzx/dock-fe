@@ -2,7 +2,7 @@
 
 import { DialogFooter } from "@/components/ui/dialog"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -50,11 +50,9 @@ export function ConfigurationsList() {
   const [newConfigName, setNewConfigName] = useState("")
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-  useEffect(() => {
-    fetchConfigurations()
-  }, [])
 
-  const fetchConfigurations = async () => {
+  // 1. Memoize fetchConfigurations with useCallback
+  const fetchConfigurations = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -92,7 +90,13 @@ export function ConfigurationsList() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [router, toast]) // 2. Add dependencies
+
+  // 3. Update useEffect to include fetchConfigurations in dependencies
+  useEffect(() => {
+    fetchConfigurations()
+  }, [fetchConfigurations]) // 4. Now has proper dependency
+
 
   const fetchConfigVersions = async (configId: string) => {
     setIsLoadingVersions(true)

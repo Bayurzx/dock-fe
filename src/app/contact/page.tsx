@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/container"
 import { ContactForm } from "@/components/contact-form"
 import type { Metadata } from "next"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Contact Us | DockerHelper",
@@ -62,9 +63,9 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-semibold">Email</h3>
                 <p className="text-muted-foreground">
-                  <a href="mailto:support@dockerhelper.com" className="hover:underline">
+                  <Link href="mailto:support@dockerhelper.com" className="hover:underline">
                     support@dockerhelper.com
-                  </a>
+                  </Link>
                 </p>
               </div>
             </div>

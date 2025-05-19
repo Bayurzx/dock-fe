@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { use } from "react"
 import { Header } from "@/components/header"
@@ -69,17 +69,8 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
   const { toast } = useToast()
   const router = useRouter()
 
-  useEffect(() => {
-    fetchConfiguration()
-  }, [configId])
 
-  useEffect(() => {
-    if (activeTab === "versions") {
-      fetchVersions()
-    }
-  }, [activeTab, configId])
-
-  const fetchConfiguration = async () => {
+  const fetchConfiguration = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -118,9 +109,9 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [configId, router, toast]) // Add dependencies
 
-  const fetchVersions = async () => {
+  const fetchVersions = useCallback(async () => {
     setIsLoadingVersions(true)
     try {
       const token = Cookies.get("token")
@@ -159,7 +150,18 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
     } finally {
       setIsLoadingVersions(false)
     }
-  }
+  }, [configId, router, toast]) // Add dependencies
+
+
+  useEffect(() => {
+    fetchConfiguration()
+  }, [fetchConfiguration])
+
+  useEffect(() => {
+    if (activeTab === "versions") {
+      fetchVersions()
+    }
+  }, [activeTab, fetchVersions])
 
   const fetchVersionContent = async (versionNumber: number) => {
     try {

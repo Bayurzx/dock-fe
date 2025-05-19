@@ -51,6 +51,52 @@ export default function ConfigImprovementHub() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+
+  // Fetch the details of a selected configuration
+  const fetchConfigDetail = useCallback(async (configId: string) => {
+    if (!configId) return
+
+    setIsLoadingConfig(true)
+    setError(null)
+    setImprovedContent(null)
+
+    try {
+      const token = Cookies.get("token")
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`${API_URL}/docker/configs/${configId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as ErrorResponse
+        throw new Error(errorData.detail || "Failed to fetch configuration details")
+      }
+
+      const data = await response.json()
+      setSelectedConfig(data)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? (err as BackendError).detail || err.message
+          : "Failed to fetch configuration details. Please try again.",
+      )
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configuration details",
+      })
+    } finally {
+      setIsLoadingConfig(false)
+    }
+  }, [router, toast]) // Add dependencies here
+
+
   // Fetch the list of configurations
   const fetchConfigurations = useCallback(async () => {
     setIsLoadingConfigs(true)
@@ -97,51 +143,8 @@ export default function ConfigImprovementHub() {
     } finally {
       setIsLoadingConfigs(false)
     }
-  }, [router, searchParams, toast])
+  }, [router, searchParams, toast, fetchConfigDetail]) // Add fetchConfigDetail to dependencies
 
-  // Fetch the details of a selected configuration
-  const fetchConfigDetail = async (configId: string) => {
-    if (!configId) return
-
-    setIsLoadingConfig(true)
-    setError(null)
-    setImprovedContent(null)
-
-    try {
-      const token = Cookies.get("token")
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`${API_URL}/docker/configs/${configId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        const errorData = (await response.json()) as ErrorResponse
-        throw new Error(errorData.detail || "Failed to fetch configuration details")
-      }
-
-      const data = await response.json()
-      setSelectedConfig(data)
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? (err as BackendError).detail || err.message
-          : "Failed to fetch configuration details. Please try again.",
-      )
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: err instanceof Error ? (err as BackendError).detail || err.message : "Failed to fetch configuration details",
-      })
-    } finally {
-      setIsLoadingConfig(false)
-    }
-  }
 
   // Submit improvement feedback
   const submitImprovement = async () => {

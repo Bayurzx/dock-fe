@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container"
+import Link from "next/link"
 
 export function Footer() {
   return (
@@ -9,15 +10,15 @@ export function Footer() {
             &copy; {new Date().getFullYear()} DockerHelper. All rights reserved.
           </div>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <a href="/terms" className="transition-colors hover:text-primary">
+            <Link href="/terms" className="transition-colors hover:text-primary">
               Terms
-            </a>
-            <a href="/privacy" className="transition-colors hover:text-primary">
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-primary">
               Privacy
-            </a>
-            <a href="/contact" className="transition-colors hover:text-primary">
+            </Link>
+            <Link href="/contact" className="transition-colors hover:text-primary">
               Contact
-            </a>
+            </Link>
           </div>
         </div>
       </Container>

@@ -12,7 +12,7 @@ export default function ConfigurationImprovePage() {
         <Container>
           <h1 className="text-3xl font-bold mb-6">Configuration Improvement</h1>
           <p className="text-lg mb-8">Improve your Docker configurations by providing feedback or reporting errors.</p>
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="text-center">Loading...</div>}>
             <ConfigImprovementHub />
           </Suspense>
         </Container>

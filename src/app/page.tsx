@@ -34,7 +34,7 @@ export default function Home() {
               <div className="flex-1 space-y-6 animate-in" style={{ "--index": 1 } as React.CSSProperties}>
                 <Badge
                   variant="outline"
-                  className="px-3 py-1 text-sm bg-accent/10 border-accent/20 text-accent-foreground animate-pulse"
+                  className="px-3 py-1 text-sm bg-accent/10 border-accent/20 text-accent animate-pulse"
                 >
                   AI-Powered Docker Configuration
                 </Badge>

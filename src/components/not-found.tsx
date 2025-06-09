@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Container } from "@/components/ui/container"
 import { Waves } from "@/components/waves-animation"
-// import { SearchParamsComponent } from "@/components/search-param"
 
 // Create a client component that uses useSearchParams
 export default function NotFound() {
@@ -228,10 +227,6 @@ export default function NotFound() {
                     </div>
                 </div>
             </div>
-            {/* This Suspense boundary is required for useSearchParams */}
-            {/* <Suspense fallback={<>🌀</>}>
-          <SearchParamsComponent />
-        </Suspense> */}
         </Container>
     )
 }

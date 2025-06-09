@@ -405,7 +405,7 @@ export function ConfigurationsList() {
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">{config.name}</CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">{config.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}</Badge>
+            <Badge variant="outline">{config.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"}</Badge>
             {config.is_verified_good ? (
               <Badge variant="success">Successful</Badge>
             ) : (
@@ -514,7 +514,7 @@ export function ConfigurationsList() {
                         <TableCell className="font-medium">{config.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {config.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}
+                            {config.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"}
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDate(config.created_at)}</TableCell>

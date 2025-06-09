@@ -1,6 +1,6 @@
 // This is your main 404 page entry file
-import NotFoundClient from '@/components/not-found-client'
 import { Suspense } from 'react'
+import NotFoundClient from '@/components/not-found-client'
 
 export default function NotFoundPage() {
   return (

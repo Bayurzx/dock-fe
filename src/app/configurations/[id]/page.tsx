@@ -521,7 +521,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
                       </div>
                     )}
                     <CardDescription>
-                      {configuration.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"} configuration
+                      {configuration.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"} configuration
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
@@ -560,7 +560,7 @@ export default function ConfigurationDetailPage({ params }: { params: Promise<{ 
                           <Label className="text-sm font-medium">Type</Label>
                           <div className="mt-1">
                             <Badge variant="outline">
-                              {configuration.type === "dockerfile" ? "Dockerfile" : "docker-compose.yaml"}
+                              {configuration.docker_compose_content === null ? "Dockerfile" : "docker-compose.yaml"}
                             </Badge>
                           </div>
                         </div>

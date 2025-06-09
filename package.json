@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build_export": "BUILD_TARGET=export next build && next export",
+    "build_standalone": "BUILD_TARGET=standalone next build",
     "start": "next start",
+    "start_standalone": "node .next/standalone/server.js",
     "lint": "next lint"
   },
   "dependencies": {

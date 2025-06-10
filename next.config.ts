@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 // Determine build output type
-const isStandalone = process.env.BUILD_TARGET === "standalone";
+const isStandalone = process.env.BUILD_TARGET === undefined || process.env.BUILD_TARGET === "standalone";
 
 // Conditional logging (only in standalone)
 const logging = isStandalone

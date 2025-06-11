@@ -1,4 +1,4 @@
-# docker-compose.yml
+# docker-compose.yaml
 
 services:
   dockerhelper-frontend:
@@ -7,22 +7,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - API_URL=${API_URL}
-      - NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=${NEXTAUTH_URL}
-      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-      - NEXT_PUBLIC_OAUTH_CALLBACK_URL=${NEXT_PUBLIC_OAUTH_CALLBACK_URL}
-      - NEXT_PUBLIC_PRODUCTION_URL=${NEXT_PUBLIC_PRODUCTION_URL}
-      - NEXT_PUBLIC_ENABLE_GITHUB_LOGIN=${NEXT_PUBLIC_ENABLE_GITHUB_LOGIN}
-      - NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=${NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN}
-      - NEXT_PUBLIC_ANALYTICS_ID=${NEXT_PUBLIC_ANALYTICS_ID}
-      - NODE_ENV=${NODE_ENV}
-      - WORKSPACE_UUID=${WORKSPACE_UUID}
-      - BUILD_TARGET=${BUILD_TARGET}
-      - NPM_PACKAGE_VERSION=${NPM_PACKAGE_VERSION}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]

@@ -1,7 +1,7 @@
 # docker-compose.yaml
 
 services:
-  dockerhelper-frontend:
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile

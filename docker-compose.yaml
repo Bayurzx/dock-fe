@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file:
-      - .env
+      - .env.bunnyshell
     ports:
       - "3000:3000"
     restart: unless-stopped

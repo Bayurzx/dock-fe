@@ -5,6 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL
+        - NEXT_PUBLIC_AUTH_ENABLED
+        - NEXT_PUBLIC_APP_URL
+        - NEXT_PUBLIC_OAUTH_CALLBACK_URL
+        - NEXT_PUBLIC_PRODUCTION_URL
+        - NEXT_PUBLIC_ENABLE_GITHUB_LOGIN
+        - NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN
+        - NEXT_PUBLIC_ANALYTICS_ID
     env_file:
       - .env.bunnyshell
     ports:

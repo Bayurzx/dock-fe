@@ -49,8 +49,8 @@ interface AuthProviderProps {
 }
 
 // API base URL from environment variables
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-6fnfsk.bunnyenv.com/api/v1"
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://frontend-6fnfsk.bunnyenv.com"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 const OAUTH_CALLBACK_URL = process.env.NEXT_PUBLIC_OAUTH_CALLBACK_URL || `${APP_URL}/login/callback`
 
 // Feature flags

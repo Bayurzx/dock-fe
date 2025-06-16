@@ -4,6 +4,9 @@
 
 DockerHelper is an AI-powered web application that automatically analyzes Git repositories and generates optimized Docker configurations. It simplifies the containerization process by providing tailored Dockerfile and docker-compose.yaml files for your projects.
 
+## Architectural Diagram
+![Architecture](./Architectural_Diagram.png)
+
 ## 🚀 Features
 
 - **AI-Powered Analysis**: Automatically analyze Git repositories to understand their structure, dependencies, and requirements
@@ -203,7 +206,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📞 Contact
 
-For questions or support, please open an issue on the GitHub repository or contact the maintainers directly.
+For questions or support, please open an issue on the GitHub repository or contact the [maintainers](mailto:bayurzx@gmail.com) directly.
 
 ---
 
